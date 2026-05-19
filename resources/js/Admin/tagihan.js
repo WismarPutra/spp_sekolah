@@ -25,6 +25,28 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
+    // --- LOGIKA BARU: KONFIRMASI PANGGIL/WA ---
+    // Menggunakan event delegation agar bekerja meskipun data di-load dinamis
+    document.addEventListener('click', function (e) {
+        // Cari tombol WA/PANGGIL berdasarkan class 'btn-reminder'
+        const btn = e.target.closest('.btn-reminder');
+
+        if (btn) {
+            const nama = btn.getAttribute('data-nama');
+            const tunggakan = parseInt(btn.getAttribute('data-tunggakan'));
+
+            let pesan = `Kirim pengingat WA biasa ke ${nama}?`;
+
+            if (tunggakan >= 2) {
+                pesan = `⚠️ PERINGATAN: ${nama} menunggak ${tunggakan} bulan.\n\nKirim SURAT PANGGILAN ORANG TUA ke nomor WhatsApp?`;
+            }
+
+            if (!confirm(pesan)) {
+                e.preventDefault(); // Batalkan pengiriman jika klik "Cancel"
+            }
+        }
+    });
+
     window.toggleTipe = function (tipe) {
         if (tipe === 'massal') {
             // Sembunyikan pilihan Siswa dan SPP

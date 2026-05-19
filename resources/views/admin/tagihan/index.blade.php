@@ -129,10 +129,15 @@ Tagihan
                         </form>
 
                         @if($item->status == 'belum')
+                        @php
+                        $jumlahTunggakan = $ambilDataTagihan->where('siswa_id', $item->siswa_id)->count();
+                        @endphp
+
                         <a href="{{ route('tagihan.reminder', $item->id) }}"
-                            class="px-2 py-1 bg-green-600 text-white rounded"
-                            onclick="return confirm('Kirim pengingat WA ke {{ $item->siswa->nama }}?')">
-                            WA
+                            class="btn-reminder px-2 py-1 {{ $jumlahTunggakan >= 2 ? 'bg-red-600' : 'bg-green-600' }} text-white rounded text-xs flex items-center gap-1"
+                            data-nama="{{ $item->siswa->nama }}" data-tunggakan="{{ $jumlahTunggakan }}">
+                            <i class="fas fa-paper-plane"></i>
+                            {{ $jumlahTunggakan >= 2 ? 'PANGGIL' : 'WA' }}
                         </a>
                         @endif
                     </td>

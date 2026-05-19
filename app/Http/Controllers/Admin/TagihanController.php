@@ -136,6 +136,9 @@ class TagihanController extends Controller
     {
         // Ambil data tagihan beserta data siswanya
         $tagihan = Tagihan::with('siswa')->findOrFail($id);
+        $jumlahTunggakan = Tagihan::where('siswa_id', $tagihan->siswa_id)
+            ->where('status', 'belum')
+            ->count();
         $listBulan = [
             1 => 'Januari',
             2 => 'Februari',
@@ -155,10 +158,17 @@ class TagihanController extends Controller
         // Kita paksa ke (int) supaya angka 4 cocok dengan key di array
         $bulanIndo = $listBulan[(int)$tagihan->bulan] ?? $tagihan->bulan;
 
-        $pesan = "Halo *{$tagihan->siswa->nama}* 👋\n\n" .
-            "Ini adalah pengingat untuk tagihan SPP bulan *{$bulanIndo} {$tagihan->tahun}*.\n" .
-            "Total yang harus dibayar: *Rp " . number_format($tagihan->jumlah, 0, ',', '.') . "*\n\n" .
-            "Mohon segera melakukan pembayaran. Terima kasih 🙏";
+        if ($jumlahTunggakan >= 2) {
+            $pesan = "⚠️ *SURAT PANGGILAN ORANG TUA* ⚠️\n\n" .
+                "Yth. Orang Tua/Wali dari *{$tagihan->siswa->nama}*,\n\n" .
+                "Kami menginformasikan bahwa putra/putri Bapak/Ibu memiliki tunggakan SPP selama *{$jumlahTunggakan} bulan*.\n\n" .
+                "Sehubungan dengan hal tersebut, kami mengharapkan kehadiran Bapak/Ibu ke sekolah untuk berkoordinasi dengan bagian Tata Usaha. Terima kasih.";
+        } else {
+            $pesan = "Halo *{$tagihan->siswa->nama}* 👋\n\n" .
+                "Ini adalah pengingat untuk tagihan SPP bulan *{$bulanIndo} {$tagihan->tahun}*.\n" .
+                "Total: *Rp " . number_format($tagihan->jumlah, 0, ',', '.') . "*\n\n" .
+                "Mohon segera melakukan pembayaran. Terima kasih 🙏";
+        }
 
         try {
             // 2. Masukkan ke Antrean (Queue)
@@ -171,7 +181,7 @@ class TagihanController extends Controller
 
             // 3. Response Sukses
             // Pesan diubah menjadi "masuk antrean" agar lebih akurat secara teknis
-            return back()->with('success', 'Pengingat untuk ' . $tagihan->siswa->nama . ' telah dijadwalkan dan akan dikirim segera.');
+            return back()->with('success', 'Pesan ' . ($jumlahTunggakan >= 2 ? 'Panggilan' : 'Pengingat') . ' untuk ' . $tagihan->siswa->nama . ' telah dijadwalkan.');
         } catch (\Exception $e) {
             // Jika gagal memasukkan ke queue (misal database queue error)
             return back()->with('error', 'Sistem antrean bermasalah: ' . $e->getMessage());

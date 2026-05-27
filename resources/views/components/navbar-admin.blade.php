@@ -22,7 +22,7 @@ transform -translate-x-full md:translate-x-0 transition-transform duration-200">
         </a>
 
         <a href="{{ route('spp.index')}}" class="block p-2 rounded ">
-            Data Iuran Praktek Komputer
+            Data SPP
         </a>
 
         <a href="/admin/tagihan" class="block p-2 rounded ">

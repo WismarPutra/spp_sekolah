@@ -47,6 +47,7 @@ class SiswaService
                 'kelas' => $data['kelas'],
                 'jurusan' => $data['jurusan'],
                 'alamat' => $data['alamat'],
+                'tahun_masuk' => $data['tahun_masuk'],
                 'no_hp' => $no_hp,
             ]);
 

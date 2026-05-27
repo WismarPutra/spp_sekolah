@@ -131,14 +131,30 @@ Tagihan
                         @if($item->status == 'belum')
                         @php
                         $jumlahTunggakan = $ambilDataTagihan->where('siswa_id', $item->siswa_id)->count();
+
+                        // JANGAN PAKAI diffInDays LAGI.
+                        // Gunakan gte() -> Jika waktu sekarang sudah melewati waktu dibuat, tombol DIJAMIN menyala.
+                        $tanggalDibuat = \Carbon\Carbon::parse($item->created_at);
+                        $sudahLewat10Hari = \Carbon\Carbon::now()->gte($tanggalDibuat);
                         @endphp
 
+                        @if($sudahLewat10Hari)
+                        {{-- Tombol aktif jika waktu sekarang >= waktu dibuat --}}
                         <a href="{{ route('tagihan.reminder', $item->id) }}"
-                            class="btn-reminder px-2 py-1 {{ $jumlahTunggakan >= 2 ? 'bg-red-600' : 'bg-green-600' }} text-white rounded text-xs flex items-center gap-1"
+                            class="btn-reminder px-2 py-1 {{ $jumlahTunggakan >= 2 ? 'bg-red-600' : 'bg-orange-500' }} text-white rounded text-xs flex items-center gap-1"
                             data-nama="{{ $item->siswa->nama }}" data-tunggakan="{{ $jumlahTunggakan }}">
                             <i class="fas fa-paper-plane"></i>
-                            {{ $jumlahTunggakan >= 2 ? 'PANGGIL' : 'WA' }}
+                            {{ $jumlahTunggakan >= 2 ? 'PANGGIL (Tunggakan >= 2)' : 'REMINDER WA' }}
                         </a>
+                        @else
+                        {{-- Tombol dikunci hanya jika waktu sekarang belum mencapai waktu dibuat --}}
+                        <button disabled
+                            class="px-2 py-1 bg-gray-300 text-gray-500 rounded text-xs flex items-center gap-1 cursor-not-allowed"
+                            title="Belum mencapai batas hari sejak tagihan diterbitkan">
+                            <i class="fas fa-clock"></i>
+                            Belum 10 Hari
+                        </button>
+                        @endif
                         @endif
                     </td>
                 </tr>

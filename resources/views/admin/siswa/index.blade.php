@@ -82,12 +82,16 @@ Data Siswa
                         </td>
                         <td class="px-4 py-4">
                             <div class="flex items-center justify-center gap-2">
-                                <button
+                                <button type="button"
                                     class="openModalEdit inline-flex items-center px-3 py-1.5 bg-yellow-400 hover:bg-yellow-500 text-yellow-900 text-xs font-bold rounded-lg transition duration-200"
                                     data-id="{{ $siswa->id }}" data-nis="{{ $siswa->nis }}"
                                     data-nama="{{ $siswa->nama }}" data-kelas="{{ $siswa->kelas }}"
-                                    data-jurusan="{{ $siswa->jurusan }}" data-alamat="{{ $siswa->alamat }}"
-                                    data-no_hp="{{ $siswa->no_hp }}">
+                                    data-jurusan="{{ $siswa->jurusan }}"
+                                    {{-- 👈 Pastikan ini memanggil kolom jurusan dari DB --}}
+                                    data-alamat="{{ $siswa->alamat }}" data-no_hp="{{ $siswa->no_hp }}"
+                                    data-tahun_masuk="{{ $siswa->tahun_masuk }}">
+                                    {{-- 👈 Pastikan ini memanggil kolom tahun_masuk dari DB --}}
+
                                     <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M11 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-5M16.5 3.5a2.121 2.121 0 113 3L11.707 15.5a1 1 0 01-.414.263l-4 1a1 1 0 01-1.213-1.213l1-4a1 1 0 01.263-.414l8.5-8.5z">

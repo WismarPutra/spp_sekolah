@@ -48,7 +48,7 @@ class TagihanService
                 ->where('bulan', $data['bulan'])
                 ->where('tahun', $data['tahun'] ?? date('Y'))->count();
 
-            if ($menghitungJumlahTagihan >= 2) {
+            if ($menghitungJumlahTagihan >= 1) {
                 continue;
             }
 

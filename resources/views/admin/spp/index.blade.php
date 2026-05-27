@@ -1,7 +1,7 @@
 @extends('components.layouts.admin')
 
 @section('content')
-Data Iuran Praktek Komputer
+Data SPP
 @endsection
 
 @section('main')

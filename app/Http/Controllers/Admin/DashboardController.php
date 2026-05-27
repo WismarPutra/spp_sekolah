@@ -49,7 +49,7 @@ class DashboardController extends Controller
 
         $response = new StreamedResponse(function () use ($request) {
             $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['No', 'Nama Siswa', 'Kelas', 'jurusan','Bulan SPP', 'Nominal', 'Status', 'Tanggal Bayar']);
+            fputcsv($handle, ['No', 'Nama Siswa', 'Kelas', 'jurusan', 'Bulan SPP', 'Nominal', 'Status', 'Tanggal Bayar']);
 
             $query = Tagihan::with('siswa');
             if ($request->bulan) {
@@ -57,14 +57,20 @@ class DashboardController extends Controller
             }
 
             foreach ($query->cursor() as $index => $row) {
+
+                // Konversi data bulan angka di database menjadi teks nama bulan
+                $bulanAngka = (int)$row->bulan;
+                $bulanTeks  = $listBulanIndo[$bulanAngka] ?? 'Bulan ' . $bulanAngka;
+
                 fputcsv($handle, [
                     $index + 1,
-                    $row->siswa->nama ?? 'N/A',
+                    $row->siswa->nama ?? 'Tidak Diketahui',
                     $row->siswa->kelas ?? 'N/A',
-                    $row->bulan,
+                    strtoupper($row->siswa->jurusan ?? 'N/A'),
+                    $bulanTeks . ' ' . $row->tahun, // Hasil: Mei 2026
                     $row->jumlah,
-                    ucfirst($row->status),
-                    $row->updated_at->format('d-m-Y H:i')
+                    $row->status == 'lunas' ? 'Lunas' : 'Belum Bayar',
+                    $row->updated_at ? $row->updated_at->format('d-m-Y H:i') : '-'
                 ]);
             }
             fclose($handle);

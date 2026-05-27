@@ -19,7 +19,7 @@
 
             <div class="mb-3">
                 <label for="tahun_masuk" class="block text-sm font-medium text-gray-700">Tahun Masuk</label>
-                <select name="tahun_masuk" id="tahun_masuk" class="w-full border rounded p-2">
+                <select name="tahun_masuk" id="edit-tahun_masuk" class="w-full border rounded p-2">
                     @php
                     $tahunSekarang = date('Y');
                     @endphp
@@ -32,10 +32,10 @@
                 </select>
             </div>
 
-            <select id="jurusan" name="jurusan" class="w-full border p-2 mb-2">
+            <select id="edit-jurusan" name="jurusan" class="w-full border p-2 mb-2">
+                <option selected default>Pilih Jurusan</option>
                 <option value="otomotif">OTOMOTIF</option>
-                <option value="tkj">TKJ</option>
-                <option value="stm">STM</option>
+                <option value="akuntansi">AKUNTANSI</option>
             </select>
 
             <input type="text" id="alamat" name="alamat" class="w-full border p-2 mb-2">

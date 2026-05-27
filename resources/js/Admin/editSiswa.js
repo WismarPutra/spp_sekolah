@@ -10,7 +10,8 @@ document.addEventListener("DOMContentLoaded", function () {
             document.getElementById("nis").value = this.dataset.nis;
             document.getElementById("nama").value = this.dataset.nama;
             document.getElementById("kelas").value = this.dataset.kelas;
-            document.getElementById("jurusan").value = this.dataset.jurusan;
+            document.getElementById("edit-jurusan").value = this.dataset.jurusan;
+            document.getElementById("edit-tahun_masuk").value = this.dataset.tahun_masuk;
             document.getElementById("alamat").value = this.dataset.alamat;
             document.getElementById("no_hp").value = this.dataset.no_hp;
 

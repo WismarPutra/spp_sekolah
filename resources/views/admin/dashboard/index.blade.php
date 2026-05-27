@@ -57,6 +57,8 @@ Dashboard Admin
                         <th class="px-4 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-left">
                             Kelas & Jurusan</th>
                         <th class="px-4 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-center">
+                            SPP Bulan</th>
+                        <th class="px-4 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-center">
                             Metode</th>
                         <th class="px-4 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">
                             Jumlah</th>
@@ -82,6 +84,9 @@ Dashboard Admin
                             <div class="text-sm text-gray-700 font-medium">{{ $bayar->tagihan->siswa->kelas ?? '-' }}
                             </div>
                             <div class="text-xs text-gray-500">{{ $bayar->tagihan->siswa->jurusan ?? '-' }}</div>
+                        </td>
+                        <td class="px-4 py-4 text-center">
+                            <div class="text-sm text-gray-700 font-medium">{{$bayar->tagihan->bulan_text ?? '-'}}</div>
                         </td>
                         <td class="px-4 py-4 text-center">
                             <span class="inline-flex px-2 py-1 text-[10px] font-bold bg-gray-100 text-gray-600 rounded">

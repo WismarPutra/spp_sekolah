@@ -77,13 +77,13 @@ class TagihanController extends Controller
         if (!$proses) {
             // Jika individu, berarti dia sudah 2x. Jika massal, berarti semua siswa sudah punya 2 tagihan.
             $pesanError = $request->tipe_tagihan === 'individu'
-                ? 'Gagal! Siswa ini sudah mencapai batas maksimal 2 tagihan untuk periode ini.'
+                ? 'Gagal! Siswa ini sudah mencapai batas maksimal 1 tagihan untuk periode ini.'
                 : 'Tidak ada tagihan baru yang dibuat. Semua siswa sudah mencapai limit atau data SPP tidak ditemukan.';
 
             return redirect()->back()->with('error', $pesanError);
         }
 
-        return redirect()->back()->with('success', 'Tagihan berhasil dibuat. Sistem hanya memproses data yang belum mencapai limit 2 kali per periode.');
+        return redirect()->back()->with('success', 'Tagihan berhasil dibuat. Sistem hanya memproses data yang belum mencapai limit 1 kali per periode.');
     }
 
     /**
@@ -136,6 +136,13 @@ class TagihanController extends Controller
     {
         // Ambil data tagihan beserta data siswanya
         $tagihan = Tagihan::with('siswa')->findOrFail($id);
+
+        $tanggalDibuat = \Carbon\Carbon::parse($tagihan->created_at);
+        $sudahLewat10Hari = \Carbon\Carbon::now()->gte($tanggalDibuat);
+
+        if (!$sudahLewat10Hari) {
+            return back()->with('error', 'Gagal! Tagihan ini belum melewati batas waktu 10 hari untuk dikirimkan pengingat.');
+        }
         $jumlahTunggakan = Tagihan::where('siswa_id', $tagihan->siswa_id)
             ->where('status', 'belum')
             ->count();
@@ -181,12 +188,11 @@ class TagihanController extends Controller
 
             // 3. Response Sukses
             // Pesan diubah menjadi "masuk antrean" agar lebih akurat secara teknis
-            return back()->with('success', 'Pesan ' . ($jumlahTunggakan >= 2 ? 'Panggilan' : 'Pengingat') . ' untuk ' . $tagihan->siswa->nama . ' telah dijadwalkan.');
+            $tipeNotif = $jumlahTunggakan >= 2 ? 'Surat Panggilan' : 'Pengingat';
+            return back()->with('success', 'Pesan ' . $tipeNotif . ' untuk ' . $tagihan->siswa->nama . ' telah berhasil dijadwalkan masuk antrean.');
         } catch (\Exception $e) {
             // Jika gagal memasukkan ke queue (misal database queue error)
             return back()->with('error', 'Sistem antrean bermasalah: ' . $e->getMessage());
         }
-
-        return back()->with('error', 'Gagal mengirim pesan. Pastikan token Fonnte aktif.');
     }
 }

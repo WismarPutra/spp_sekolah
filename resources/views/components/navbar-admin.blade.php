@@ -25,7 +25,7 @@ transform -translate-x-full md:translate-x-0 transition-transform duration-200">
             Data SPP
         </a>
 
-        <a href="/admin/tagihan" class="block p-2 rounded ">
+        <a href="{{ route('tagihan.index')}}" class="block p-2 rounded ">
             Tagihan
         </a>
 

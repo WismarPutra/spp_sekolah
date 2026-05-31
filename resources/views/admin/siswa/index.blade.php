@@ -39,9 +39,13 @@ Data Siswa
                         <th class="px-4 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-center">
                             NIS</th>
                         <th class="px-4 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-left">
-                            Informasi Siswa</th>
+                            Nama Siswa</th>
                         <th class="px-4 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-left">
-                            Kelas & Jurusan</th>
+                            Tahun Masuk</th>
+                        <th class="px-4 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-left">
+                            Kelas</th>
+                        <th class="px-4 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-left">
+                            Jurusan</th>
                         <th class="px-4 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-left">
                             Alamat</th>
                         <th class="px-4 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-center">
@@ -59,11 +63,15 @@ Data Siswa
                         </td>
                         <td class="px-4 py-4">
                             <div class="text-sm font-bold text-gray-900">{{ $siswa->nama }}</div>
-                            <div class="text-xs text-gray-400">Tahun Masuk: {{ $siswa->tahun_masuk ?? '-' }}</div>
+                        </td>
+                        <td class="px-4 py-4">
+                            <div class="text-sm text-center text-gray-700"> {{ $siswa->tahun_masuk ?? '-' }}</div>
                         </td>
                         <td class="px-4 py-4">
                             <div class="text-sm text-gray-700 font-medium">Kelas {{ $siswa->kelas }}</div>
-                            <div class="text-xs text-gray-500">{{ $siswa->jurusan }}</div>
+                        </td>
+                        <td class="px-4 py-4">
+                            <div class="text-sm text-gray-700">{{ $siswa->jurusan }}</div>
                         </td>
                         <td class="px-4 py-4">
                             <p class="text-sm text-gray-600 truncate max-w-[200px]" title="{{ $siswa->alamat }}">

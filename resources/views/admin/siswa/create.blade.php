@@ -10,7 +10,9 @@
 
             <div class="mb-3">
                 <label>NIS</label>
-                <input type="text" name="nis" class="w-full border p-2 rounded" required>
+                <input type="text" name="nis" class="w-full border p-2 rounded" required minlength="4" maxlength="10"
+                    pattern="[0-9]*" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                    placeholder="Contoh: 20260102">
             </div>
 
             <div class="mb-3">

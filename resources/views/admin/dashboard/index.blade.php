@@ -10,8 +10,10 @@ Dashboard Admin
     <!-- STATS CARDS: Grid otomatis berubah dari 1 kolom (HP) ke 4 kolom (Laptop) -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         <div class="bg-white shadow-sm border border-gray-100 rounded-xl p-6 transition-transform hover:scale-[1.02]">
-            <p class="text-sm text-gray-500 font-medium">Total Siswa</p>
-            <p class="text-2xl md:text-3xl font-bold text-gray-800">{{ $totalSiswa }}</p>
+            <a href="/admin/siswa">
+                <p class="text-sm text-gray-500 font-medium">Total Siswa</p>
+                <p class="text-2xl md:text-3xl font-bold text-gray-800">{{ $totalSiswa }}</p>
+            </a>
         </div>
 
         <div class="bg-white shadow-sm border border-gray-100 rounded-xl p-6 transition-transform hover:scale-[1.02]">
@@ -25,8 +27,10 @@ Dashboard Admin
         </div>
 
         <div class="bg-white shadow-sm border border-gray-100 rounded-xl p-6 transition-transform hover:scale-[1.02]">
-            <p class="text-sm text-gray-500 font-medium">Tunggakan</p>
-            <p class="text-2xl md:text-3xl font-bold text-red-600">{{ $totalTunggakan }}</p>
+            <a href="/admin/tagihan">
+                <p class="text-sm text-gray-500 font-medium">Tunggakan</p>
+                <p class="text-2xl md:text-3xl font-bold text-red-600">{{ $totalTunggakan }}</p>
+            </a>
         </div>
     </div>
 
@@ -55,7 +59,11 @@ Dashboard Admin
                         <th class="px-4 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-left">
                             Nama Siswa</th>
                         <th class="px-4 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-left">
-                            Kelas & Jurusan</th>
+                            Tahun Masuk</th>
+                        <th class="px-4 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-left">
+                            Kelas </th>
+                        <th class="px-4 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-left">
+                            Jurusan</th>
                         <th class="px-4 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-center">
                             SPP Bulan</th>
                         <th class="px-4 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-center">
@@ -77,13 +85,18 @@ Dashboard Admin
                             <div class="text-sm font-semibold text-gray-900">
                                 {{ $bayar->tagihan->siswa->nama ?? 'Data Tidak Ditemukan' }}
                             </div>
-                            <div class="text-xs text-gray-400">Tahun Masuk:
-                                {{ $bayar->tagihan->siswa->tahun_masuk ?? '-' }}</div>
+                        </td>
+                        <td class="px-4 py-4">
+                            <div class="text-sm text-gray-700">
+                                {{ $bayar->tagihan->siswa->tahun_masuk ?? '-' }}
+                            </div>
                         </td>
                         <td class="px-4 py-4">
                             <div class="text-sm text-gray-700 font-medium">{{ $bayar->tagihan->siswa->kelas ?? '-' }}
                             </div>
-                            <div class="text-xs text-gray-500">{{ $bayar->tagihan->siswa->jurusan ?? '-' }}</div>
+                        </td>
+                        <td class="px-4 py-4">
+                            <div class="text-sm text-gray-700">{{ $bayar->tagihan->siswa->jurusan ?? '-' }}</div>
                         </td>
                         <td class="px-4 py-4 text-center">
                             <div class="text-sm text-gray-700 font-medium">{{$bayar->tagihan->bulan_text ?? '-'}}</div>

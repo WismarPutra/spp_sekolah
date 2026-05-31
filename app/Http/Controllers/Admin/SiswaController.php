@@ -46,22 +46,23 @@ class SiswaController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'nis'     => 'required|unique:siswa',
-            'nama'    => 'required',
-            'kelas'   => 'required',
-            'tahun_masuk'   => 'required',
-            'jurusan' => 'required',
-            'alamat'  => 'required',
-            // Validasi: Harus angka, mulai dengan 08 atau 62, minimal 10 maks 14 digit
-            'no_hp'   => ['required', 'regex:/^(08|628)[0-9]{8,12}$/'],
+            'nis'         => 'required|numeric|digits_between:4,10|unique:siswa', // Tambahkan ini
+            'nama'        => 'required',
+            'kelas'       => 'required',
+            'tahun_masuk' => 'required',
+            'jurusan'     => 'required',
+            'alamat'      => 'required',
+            'no_hp'       => ['required', 'regex:/^(08|628)[0-9]{8,12}$/'],
         ], [
+            'nis.numeric' => 'NIS harus berupa angka.',
+            'nis.digits_between' => 'NIS harus berjumlah antara 4 sampai 10 digit.',
+            'nis.unique' => 'NIS ini sudah terdaftar.',
             'no_hp.regex' => 'Format nomor HP tidak valid. Gunakan format 08... atau 628...',
         ]);
 
         $this->siswaService->create($request->all());
         return redirect()->back()->with('success', 'Data siswa berhasil ditambahkan');
     }
-
     /**
      * Display the specified resource.
      */
@@ -88,13 +89,17 @@ class SiswaController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-            'nis' => 'required|unique:siswa,nis,' . $id,
+            // Tambahkan numeric dan digits_between
+            'nis' => 'required|numeric|digits_between:4,10|unique:siswa,nis,' . $id,
             'nama' => 'required',
             'kelas' => 'required',
             'tahun_masuk' => 'required',
             'jurusan' => 'required',
             'alamat' => 'required',
             'no_hp' => 'required'
+        ], [
+            'nis.numeric' => 'NIS harus berupa angka.',
+            'nis.digits_between' => 'NIS harus berjumlah antara 4 sampai 10 digit.',
         ]);
 
         $siswa = Siswa::with('user')->findOrFail($id);

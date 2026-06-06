@@ -63,6 +63,71 @@ class SiswaService
         });
     }
 
+    // 🔥 METHOD UPDATE BARU
+    public function update($id, array $data)
+    {
+        return DB::transaction(function () use ($id, $data) {
+            $siswa = Siswa::with('user')->findOrFail($id);
+
+            $noLama = $siswa->no_hp;
+            // Standardisasi nomor baru seperti saat create (62 -> 0)
+            $noBaru = preg_replace('/^62/', '0', $data['no_hp']);
+
+            // Update data Siswa
+            $siswa->update([
+                'nis'         => $data['nis'],
+                'nama'        => $data['nama'],
+                'kelas'       => $data['kelas'],
+                'tahun_masuk' => $data['tahun_masuk'],
+                'jurusan'     => $data['jurusan'],
+                'alamat'      => $data['alamat'],
+                'no_hp'       => $noBaru
+            ]);
+
+            // Update nama di User jika relasi ada
+            if ($siswa->user) {
+                $siswa->user->update([
+                    'name' => $data['nama']
+                ]);
+            }
+
+            // Cek perubahan nomor HP untuk kirim ulang akun via Queue
+            if ($noLama != $noBaru) {
+                $passwordBaru = Str::random(8);
+
+                if ($siswa->user) {
+                    $siswa->user->update([
+                        'password' => Hash::make($passwordBaru)
+                    ]);
+
+                    KirimAkunSiswaJob::dispatch(
+                        $noBaru,
+                        $siswa->nama,
+                        $siswa->user->email,
+                        $passwordBaru
+                    );
+                }
+            }
+
+            return $siswa;
+        });
+    }
+
+    // 🔥 METHOD DELETE BARU
+    public function delete($id)
+    {
+        return DB::transaction(function () use ($id) {
+            $siswa = Siswa::findOrFail($id);
+
+            // Hapus User pendukung terlebih dahulu agar tidak menjadi data yatim
+            if ($siswa->user) {
+                $siswa->user->delete();
+            }
+
+            return $siswa->delete();
+        });
+    }
+
     private function generateEmail($nama)
     {
         $namaDepan = Str::slug($nama, '.');

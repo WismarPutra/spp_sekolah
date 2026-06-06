@@ -88,54 +88,24 @@ class SiswaController extends Controller
      */
     public function update(Request $request, $id)
     {
+        // Tetap lakukan validasi di Controller sebelum masuk ke Service Layer
         $request->validate([
-            // Tambahkan numeric dan digits_between
-            'nis' => 'required|numeric|digits_between:4,10|unique:siswa,nis,' . $id,
-            'nama' => 'required',
-            'kelas' => 'required',
+            'nis'         => 'required|numeric|digits_between:4,10|unique:siswa,nis,' . $id,
+            'nama'        => 'required',
+            'kelas'       => 'required', // Memakai 'kelas' pasca perbaikan name HTML
             'tahun_masuk' => 'required',
-            'jurusan' => 'required',
-            'alamat' => 'required',
-            'no_hp' => 'required'
+            'jurusan'     => 'required',
+            'alamat'      => 'required',
+            'no_hp'       => ['required', 'regex:/^(08|628)[0-9]{8,12}$/']
         ], [
             'nis.numeric' => 'NIS harus berupa angka.',
             'nis.digits_between' => 'NIS harus berjumlah antara 4 sampai 10 digit.',
+            'nis.unique' => 'NIS ini sudah terdaftar.',
+            'no_hp.regex' => 'Format nomor HP tidak valid. Gunakan format 08... atau 628...',
         ]);
 
-        $siswa = Siswa::with('user')->findOrFail($id);
-
-        //  SIMPAN NOMOR LAMA
-        $noLama = $siswa->no_hp;
-
-        // 🔄 UPDATE DATA
-        $siswa->update([
-            'nis' => $request->nis,
-            'nama' => $request->nama,
-            'kelas' => $request->kelas,
-            'tahun_masuk' => $request->tahun_masuk,
-            'jurusan' => $request->jurusan,
-            'alamat' => $request->alamat,
-            'no_hp' => $request->no_hp
-        ]);
-
-        // 🔥 CEK APAKAH NOMOR BERUBAH
-        if ($noLama != $request->no_hp) {
-
-            // generate password baru
-            $passwordBaru = Str::random(8);
-
-            $siswa->user->update([
-                'password' => Hash::make($passwordBaru)
-            ]);
-
-            // kirim ke nomor baru via queue
-            KirimAkunSiswaJob::dispatch(
-                $request->no_hp,
-                $siswa->nama,
-                $siswa->user->email,
-                $passwordBaru
-            );
-        }
+        // Kirim data bersih ke Service Layer
+        $this->siswaService->update($id, $request->all());
 
         return back()->with('success', 'Data berhasil diupdate');
     }
@@ -145,8 +115,8 @@ class SiswaController extends Controller
      */
     public function destroy(string $id)
     {
-        $siswa = Siswa::findorfail($id);
-        $siswa->delete();
+        // Panggil fungsi delete dari service
+        $this->siswaService->delete($id);
 
         return redirect()->back()->with('success', 'Data berhasil dihapus');
     }

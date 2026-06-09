@@ -7,30 +7,34 @@ Data Siswa
 @section('main')
 <div class="p-4 md:p-6 space-y-6">
 
-    <!-- HEADER & ACTION -->
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h2 class="text-xl font-bold text-gray-800">Manajemen Data Siswa</h2>
-        <form action="{{ route('admin.siswa.reset') }}" method="POST"
-            onsubmit="return confirm('Reset semua status kirim siswa?')">
-            @csrf
-            <button type="submit" class="btn btn-danger">
-                <i class="fas fa-sync"></i> Reset Status Bulan Baru
-            </button>
-        </form>
-        <button
-            class="w-full sm:w-auto bg-blue-600 text-white px-5 py-2.5 rounded-lg hover:bg-blue-700 transition duration-200 shadow-sm font-medium openModal flex items-center justify-center">
-            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6">
-                </path>
-            </svg>
-            Tambah Siswa
-        </button>
 
+        <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+            <form action="{{ route('admin.siswa.reset') }}" method="POST"
+                onsubmit="return confirm('Reset semua status kirim siswa?')">
+                @csrf
+                <button type="submit"
+                    class="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-lg text-sm font-medium transition duration-200 shadow-sm">
+                    <i class="fas fa-sync"></i> Reset Status Bulan Baru
+                </button>
+            </form>
+
+            {{-- Tombol Tambah SPP diubah ke Anchor Target --}}
+            <a href="#create-siswa"
+                class="w-full sm:w-auto bg-blue-600 text-white px-5 py-2.5 rounded-lg hover:bg-blue-700 transition duration-200 shadow-sm font-medium flex items-center justify-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+                Tambah Siswa
+            </a>
+        </div>
     </div>
 
+    {{-- Kita biarkan include create di sini, nanti tinggal disesuaikan id-nya ke #create-siswa --}}
     @include('admin.siswa.create')
 
-    <!-- TABLE CONTAINER -->
     <div class="bg-white shadow-sm border border-gray-100 rounded-xl overflow-hidden">
         <div class="overflow-x-auto">
             <table class="w-full min-w-[1100px] divide-y divide-gray-200">
@@ -40,7 +44,7 @@ Data Siswa
                             NIS</th>
                         <th class="px-4 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-left">
                             Nama Siswa</th>
-                        <th class="px-4 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-left">
+                        <th class="px-4 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-center">
                             Tahun Masuk</th>
                         <th class="px-4 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-left">
                             Kelas</th>
@@ -58,9 +62,7 @@ Data Siswa
                 <tbody class="bg-white divide-y divide-gray-100">
                     @foreach($urutanSiswa as $siswa)
                     <tr class="hover:bg-gray-50/80 transition duration-150">
-                        <td class="px-4 py-4 text-center text-sm font-medium text-gray-600">
-                            {{ $siswa->nis }}
-                        </td>
+                        <td class="px-4 py-4 text-center text-sm font-medium text-gray-600">{{ $siswa->nis }}</td>
                         <td class="px-4 py-4">
                             <div class="text-sm font-bold text-gray-900">{{ $siswa->nama }}</div>
                         </td>
@@ -71,12 +73,11 @@ Data Siswa
                             <div class="text-sm text-gray-700 font-medium">Kelas {{ $siswa->kelas }}</div>
                         </td>
                         <td class="px-4 py-4">
-                            <div class="text-sm text-gray-700">{{ $siswa->jurusan }}</div>
+                            <div class="text-sm text-gray-700 uppercase">{{ $siswa->jurusan }}</div>
                         </td>
                         <td class="px-4 py-4">
                             <p class="text-sm text-gray-600 truncate max-w-[200px]" title="{{ $siswa->alamat }}">
-                                {{ $siswa->alamat }}
-                            </p>
+                                {{ $siswa->alamat }}</p>
                         </td>
                         <td class="px-4 py-4 text-center">
                             <a href="https://wa.me/{{ $siswa->no_hp }}" target="_blank"
@@ -90,23 +91,16 @@ Data Siswa
                         </td>
                         <td class="px-4 py-4">
                             <div class="flex items-center justify-center gap-2">
-                                <button type="button"
-                                    class="openModalEdit inline-flex items-center px-3 py-1.5 bg-yellow-400 hover:bg-yellow-500 text-yellow-900 text-xs font-bold rounded-lg transition duration-200"
-                                    data-id="{{ $siswa->id }}" data-nis="{{ $siswa->nis }}"
-                                    data-nama="{{ $siswa->nama }}" data-kelas="{{ $siswa->kelas }}"
-                                    data-jurusan="{{ $siswa->jurusan }}"
-                                    {{-- 👈 Pastikan ini memanggil kolom jurusan dari DB --}}
-                                    data-alamat="{{ $siswa->alamat }}" data-no_hp="{{ $siswa->no_hp }}"
-                                    data-tahun_masuk="{{ $siswa->tahun_masuk }}">
-                                    {{-- 👈 Pastikan ini memanggil kolom tahun_masuk dari DB --}}
-
+                                {{-- UBAH BUTTON EDIT JADI ANCHOR TAG TARGET --}}
+                                <a href="#edit-siswa-{{ $siswa->id }}"
+                                    class="inline-flex items-center px-3 py-1.5 bg-yellow-400 hover:bg-yellow-500 text-yellow-900 text-xs font-bold rounded-lg transition duration-200">
                                     <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M11 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-5M16.5 3.5a2.121 2.121 0 113 3L11.707 15.5a1 1 0 01-.414.263l-4 1a1 1 0 01-1.213-1.213l1-4a1 1 0 01.263-.414l8.5-8.5z">
                                         </path>
                                     </svg>
                                     Edit
-                                </button>
+                                </a>
 
                                 <form action="{{ route('siswa.destroy', $siswa->id) }}" method="POST"
                                     onsubmit="return confirm('Yakin ingin menghapus data siswa ini?')">
@@ -124,6 +118,10 @@ Data Siswa
                                     </button>
                                 </form>
                             </div>
+
+                            {{-- PINDAH KE DALAM LOOP SINI AGAR BERKAS EDIT BISA MEMBACA VARIABEL $siswa LANGSUNG --}}
+                            @include('admin.siswa.edit')
+
                         </td>
                     </tr>
                     @endforeach
@@ -132,8 +130,4 @@ Data Siswa
         </div>
     </div>
 </div>
-
-{{-- Include modal edit di luar loop table agar tidak duplikasi elemen berat --}}
-@include('admin.siswa.edit')
-
 @endsection

@@ -11,7 +11,7 @@ class SppController extends Controller
 {
     public function index()
     {
-        $spp = Spp::all();
+        $spp = Spp::orderBy('jurusan', 'asc')->orderBy('kelas', 'asc')->get();
         return view('admin.spp.index', compact('spp'));
     }
 
@@ -44,6 +44,19 @@ class SppController extends Controller
     public function update(Request $request, $id)
     {
         $spp = Spp::findOrFail($id);
+
+        // Cek apakah kombinasi tahun, kelas, dan jurusan sudah ada
+        $exists = Spp::where('tahun', $request->tahun)
+            ->where('kelas', $request->kelas)
+            ->where('jurusan', $request->jurusan)
+            ->exists();
+
+        if ($exists) {
+            return redirect()->back()
+                ->withInput() // Agar admin tidak perlu ngetik ulang yang lain
+                ->with('error', 'Data SPP untuk tahun, kelas, dan jurusan tersebut sudah ada!');
+        }
+        
         $spp->update($request->all());
 
         return redirect()->back()->with('success', 'Data berhasil diupdate');

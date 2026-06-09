@@ -11,10 +11,10 @@ Data SPP
     {{-- HEADER --}}
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
         <h2 class="text-xl font-bold text-gray-800">Manajemen Data SPP</h2>
-        <button
-            class="w-full sm:w-auto bg-blue-600 text-white px-5 py-2.5 rounded-lg hover:bg-blue-700 transition shadow-sm font-medium openModal">
+        <a href="#create-spp"
+            class="w-full sm:w-auto text-center bg-blue-600 text-white px-5 py-2.5 rounded-lg hover:bg-blue-700 transition shadow-sm font-medium inline-block">
             Tambah SPP
-        </button>
+        </a>
         @include('admin.spp.create')
     </div>
 
@@ -59,28 +59,27 @@ Data SPP
 
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="flex items-center justify-center gap-3">
-                                <button
-                                    class="bg-yellow-400 hover:bg-yellow-500 text-yellow-900 px-3 py-1.5 rounded-lg text-xs font-bold transition openEdit"
-                                    data-id="{{ $item->id }}" data-tahun="{{ $item->tahun }}"
-                                    data-kelas="{{ $item->kelas }}" data-jurusan="{{ $item->jurusan }}"
-                                    data-nominal="{{ $item->nominal }}">
+                                <a href="#edit-spp-{{ $item->id }}"
+                                    class="bg-yellow-400 hover:bg-yellow-500 text-yellow-900 px-3 py-1.5 rounded-lg text-xs font-bold transition inline-block">
                                     Edit
-                                </button>
+                                </a>
 
                                 <form action="{{ route('spp.destroy', $item->id) }}" method="POST"
                                     onsubmit="return confirm('Yakin hapus data ini?')">
                                     @csrf
                                     @method('DELETE')
-
                                     <button
                                         class="bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition">
                                         Hapus
                                     </button>
                                 </form>
                             </div>
+
+                            {{-- PANGGIL MODAL EDIT --}}
+                            @include('admin.spp.edit')
+
                         </td>
                     </tr>
-
                     @empty
                     <tr>
                         <td colspan="5" class="text-center py-10 text-gray-400 italic text-sm">
@@ -92,7 +91,6 @@ Data SPP
             </table>
         </div>
     </div>
-
 </div>
 
 @endsection

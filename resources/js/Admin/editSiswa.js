@@ -26,4 +26,11 @@ document.addEventListener("DOMContentLoaded", function () {
             modal.classList.add("hidden");
         }
     });
+
+    window.addEventListener('click', function (e) {
+        if (e.target === modal) {
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+        }
+    });
 });

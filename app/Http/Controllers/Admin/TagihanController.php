@@ -66,24 +66,39 @@ class TagihanController extends Controller
     public function store(Request $request, TagihanService $tagihanService)
     {
         $request->validate([
-            'tipe_tagihan' => 'required',
-            'bulan' => 'required',
-            'tahun' => 'required',
+            'tipe_tagihan' => 'required|in:individu,massal',
+            'bulan'        => 'required|integer|between:1,12',
+            'tahun'        => 'required|integer',
         ]);
 
-        // Baris 44: Pastikan memanggil method 'create' dengan benar
-        $proses = $tagihanService->create($request->all());
+        $dataInput = $request->all();
+
+        // LOGIKA PERBAIKAN: Jika tipe individu namun admin lupa memilih spp_id manual di form,
+        // kita bantu cari otomatis di server berdasarkan kelas & jurusan si siswa!
+        if ($request->tipe_tagihan === 'individu') {
+            $request->validate(['siswa_id' => 'required']);
+
+            $siswa = Siswa::findOrFail($request->siswa_id);
+            $sppSiswa = Spp::where('kelas', $siswa->kelas)
+                ->where('jurusan', $siswa->jurusan)
+                ->first();
+
+            // Jika form manual diisi, pakai itu. Jika kosong, pakai pencocokan otomatis
+            $dataInput['spp_id'] = $request->filled('spp_id') ? $request->spp_id : ($sppSiswa ? $sppSiswa->id : null);
+            $dataInput['jumlah'] = $sppSiswa ? $sppSiswa->nominal : 0;
+        }
+
+        $proses = $tagihanService->create($dataInput);
 
         if (!$proses) {
-            // Jika individu, berarti dia sudah 2x. Jika massal, berarti semua siswa sudah punya 2 tagihan.
             $pesanError = $request->tipe_tagihan === 'individu'
-                ? 'Gagal! Siswa ini sudah mencapai batas maksimal 1 tagihan untuk periode ini.'
-                : 'Tidak ada tagihan baru yang dibuat. Semua siswa sudah mencapai limit atau data SPP tidak ditemukan.';
+                ? 'Gagal! Siswa ini sudah memiliki tagihan aktif pada periode bulan dan tahun tersebut.'
+                : 'Proses Massal Selesai: Tidak ada tagihan baru ditambahkan (semua siswa sudah memiliki tagihan atau master tarif SPP belum diset).';
 
             return redirect()->back()->with('error', $pesanError);
         }
 
-        return redirect()->back()->with('success', 'Tagihan berhasil dibuat. Sistem hanya memproses data yang belum mencapai limit 1 kali per periode.');
+        return redirect()->back()->with('success', 'Tagihan transaksi berhasil dibuat & antrean pengiriman WhatsApp terjadwal.');
     }
 
     /**
@@ -105,9 +120,25 @@ class TagihanController extends Controller
     /**
      * Update the specified resource in storage.
      */
+    // Tambahan logika di TagihanController.php untuk method update
     public function update(Request $request, string $id)
     {
-        //
+        $request->validate([
+            'bulan'  => 'required|integer|between:1,12',
+            'tahun'  => 'required|integer',
+            'jumlah' => 'required|numeric',
+        ]);
+
+        $tagihan = Tagihan::findOrFail($id);
+
+        // Melakukan update data tanpa mengubah kolom status pembayaran
+        $tagihan->update([
+            'bulan'  => $request->bulan,
+            'tahun'  => $request->tahun,
+            'jumlah' => $request->jumlah,
+        ]);
+
+        return redirect()->route('tagihan.index')->with('success', 'Data rincian periode & nominal tagihan berhasil diperbarui.');
     }
 
     /**

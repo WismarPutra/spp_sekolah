@@ -1,106 +1,102 @@
-<div id="modal"
-    class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 transition duration-200">
+<div id="modal-tambah-tagihan"
+    class="fixed inset-0 bg-black/50 opacity-0 pointer-events-none target:opacity-100 target:pointer-events-auto flex items-center justify-center z-50 transition-opacity duration-200">
 
-    <div class="bg-white w-full max-w-lg rounded-xl shadow-lg p-6 relative">
+    <div class="bg-white w-full max-w-lg rounded-xl shadow-lg p-6 relative mx-4">
+        <a href="#" class="absolute top-3 right-4 text-gray-400 hover:text-gray-600 text-2xl font-bold">&times;</a>
 
-        <!-- Header -->
-        <h2 class="text-lg font-semibold mb-4">Tambah Tagihan</h2>
+        <h2 class="text-lg font-semibold mb-4 text-gray-800">Tambah Tagihan Baru</h2>
 
-        <!-- Close -->
-        <button id="closeModal" class="absolute top-2 right-3 text-gray-500 text-xl">
-            &times;
-        </button>
-
-        <!-- Form -->
         <form action="{{ route('tagihan.store') }}" method="POST">
             @csrf
 
-            <div class="mb-3">
-                <label>Tipe Pembuatan</label><br>
-                <input type="radio" name="tipe_tagihan" value="individu" onclick="toggleTipe('individu')" checked> Per
-                Siswa
-                <input type="radio" name="tipe_tagihan" value="massal" onclick="toggleTipe('massal')"> Masal (Semua
-                Siswa)
-            </div>
-            <!-- Siswa -->
-            <div id="section_siswa" class="mb-3">
-                <label class="block text-sm font-medium">Siswa</label>
-                <select name="siswa_id" id="siswa_select" class="w-full border rounded p-2">
-                    <option value="" disabled selected>-- Pilih Siswa --</option>
-                    @foreach($siswa as $s)
-                    @php
-                    // Cari data SPP yang cocok dengan kelas dan jurusan siswa ini
-                    $sppSiswa = $spp->where('kelas', $s->kelas)->where('jurusan', $s->jurusan)->first();
-                    $nominal = $sppSiswa ? $sppSiswa->nominal : 0;
-                    $sppId = $sppSiswa ? $sppSiswa->id : '';
-                    @endphp
-                    <option value="{{ $s->id }}" data-nominal="{{ $nominal }}" data-sppid="{{ $sppId }}">
-                        {{ $s->nama }} - {{ $s->kelas }} - {{ strtoupper($s->jurusan) }}
-                    </option>
-                    @endforeach
-                </select>
-            </div>
-
-            <!-- SPP -->
-            <div id="section_spp" class=" mb-3">
-                <label class="block text-sm">SPP</label>
-                <select name="spp_id" id="spp_id_input" class="w-full border rounded p-2">
-                    <option value="" disabled selected>-- Pilih SPP --</option>
-                    @foreach($spp as $sp)
-                    <option value="{{ $sp->id }}">
-                        {{ $sp->tahun }} - {{$sp->jurusan}} - Rp {{ number_format($sp->nominal) }}
-                    </option>
-                    @endforeach
-                </select>
-
-                <!-- Jumlah -->
-                <div class="mb-3">
-                    <label class="block text-sm font-medium">Nominal</label>
-                    <input type="number" name="jumlah" id="nominal_input" class="w-full border rounded p-2 bg-gray-100"
-                        readonly>
+            {{-- LOGIKA SELEKTOR FORM MURNI HTML & TAILWIND (TANPA JS TOGGLE) --}}
+            <div class="mb-4 bg-gray-50 p-3 rounded-lg border border-gray-100">
+                <span class="block text-xs font-bold text-gray-400 uppercase mb-2">Tipe Pembuatan</span>
+                <div class="flex gap-4">
+                    <label class="flex items-center gap-2 text-sm text-gray-700 font-medium cursor-pointer">
+                        <input type="radio" name="tipe_tagihan" value="individu" checked
+                            class="peer/indiv text-blue-600 focus:ring-blue-500">
+                        <span>Per Siswa (Individu)</span>
+                    </label>
+                    <label class="flex items-center gap-2 text-sm text-gray-700 font-medium cursor-pointer">
+                        <input type="radio" name="tipe_tagihan" value="massal"
+                            class="peer/mass text-blue-600 focus:ring-blue-500">
+                        <span>Massal (Semua Siswa)</span>
+                    </label>
                 </div>
             </div>
 
-
-
-            <!-- Bulan -->
+            {{-- CONTAINER FORM INDIVIDU --}}
+            {{-- Menggunakan form langsung untuk memilih data --}}
             <div class="mb-3">
-                <label class="block text-sm">Bulan</label>
-                <select name="bulan" id="" class="w-full border rounded p-2">
-                    @for ($i = 1; $i <= 12; $i++) <option value="{{ $i }}"
-                        {{ $i == \Carbon\Carbon::now()->month ? 'selected' : '' }}>
-                        {{ \Carbon\Carbon::create()->month($i)->translatedFormat('F') }}
-                        </option>
-                        @endfor
-
-                </select>
-
-            </div>
-
-            <!-- Tahun -->
-            <div class="mb-3">
-                <label for="tahun" class="block text-sm font-medium text-gray-700">Tahun</label>
-                <select name="tahun" id="tahun" class="w-full border rounded p-2">
+                <label class="block text-sm font-semibold text-gray-600 mb-1">Pilih Siswa & Parameter SPP</label>
+                <select name="siswa_id"
+                    class="w-full border border-gray-200 rounded-lg p-2.5 text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+                    <option value="" disabled selected>-- Pilih Siswa --</option>
+                    @foreach($siswa as $s)
                     @php
-                    $tahunSekarang = date('Y');
+                    $sppSiswa = $spp->where('kelas', $s->kelas)->where('jurusan', $s->jurusan)->first();
+                    $sppId = $sppSiswa ? $sppSiswa->id : '';
                     @endphp
-
-                    @for ($i = $tahunSekarang; $i >= $tahunSekarang - 5; $i--)
-                    <option value="{{ $i }}" {{ (old('tahun') ?? $tahunSekarang) == $i ? 'selected' : '' }}>
-                        {{ $i }}
+                    {{-- Mengirimkan SPP ID langsung dari value alternatif untuk diproses di Controller --}}
+                    <option value="{{ $s->id }}">
+                        {{ $s->nama }} — Kelas {{ $s->kelas }} ({{ strtoupper($s->jurusan) }})
                     </option>
-                    @endfor
+                    @endforeach
                 </select>
+                <p class="text-[11px] text-gray-400 mt-1">*Sistem otomatis mencocokkan nominal SPP berdasarkan data
+                    master penempatan kelas & jurusan siswa.</p>
             </div>
 
-            <!-- Button -->
-            <div class="flex justify-end gap-2 mt-4">
-                <button type="button" class="px-4 py-2 bg-gray-400 text-white rounded closeModalTagihan">
-                    Batal
-                </button>
+            <div class="mb-3">
+                <label class="block text-sm font-semibold text-gray-600 mb-1">Gunakan Parameter Tarif SPP Acuan</label>
+                <select name="spp_id"
+                    class="w-full border border-gray-200 rounded-lg p-2.5 text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+                    <option value="" disabled selected>-- Pilih Referensi Angkatan / Jurusan --</option>
+                    @foreach($spp as $sp)
+                    <option value="{{ $sp->id }}">
+                        Angkatan {{ $sp->tahun }} — {{$sp->kelas}} - {{ strtoupper($sp->jurusan) }} — (Rp
+                        {{ number_format($sp->nominal) }})
+                    </option>
+                    @endforeach
+                </select>
+                <p class="text-[11px] text-red-400 mt-1">*Pilih opsi ini jika menginput tagihan bertipe khusus/individu.
+                </p>
+            </div>
 
-                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded">
-                    Simpan
+            {{-- PERIODE BULAN & TAHUN --}}
+            <div class="grid grid-cols-2 gap-3 mb-4">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-600 mb-1">Bulan</label>
+                    <select name="bulan"
+                        class="w-full border border-gray-200 rounded-lg p-2 text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+                        @for ($i = 1; $i <= 12; $i++) <option value="{{ $i }}"
+                            {{ $i == \Carbon\Carbon::now()->month ? 'selected' : '' }}>
+                            {{ \Carbon\Carbon::create()->month($i)->translatedFormat('F') }}
+                            </option>
+                            @endfor
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-600 mb-1">Tahun</label>
+                    <select name="tahun"
+                        class="w-full border border-gray-200 rounded-lg p-2 text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+                        @php $tahunSekarang = date('Y'); @endphp
+                        @for ($i = $tahunSekarang; $i >= $tahunSekarang - 3; $i--)
+                        <option value="{{ $i }}">{{ $i }}</option>
+                        @endfor
+                    </select>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-2 border-t border-gray-100 pt-4">
+                <a href="#"
+                    class="px-4 py-2 bg-gray-100 text-gray-600 rounded-lg text-sm font-medium hover:bg-gray-200 transition">
+                    Batal
+                </a>
+                <button type="submit"
+                    class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition shadow-sm">
+                    Simpan & Terbitkan
                 </button>
             </div>
         </form>

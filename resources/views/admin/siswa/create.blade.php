@@ -1,5 +1,3 @@
-{{-- ================= POP-UP TAMBAH SISWA (100% TAILWIND) ================= --}}
-{{-- Ubah id menjadi 'create-siswa' dan ganti kelas 'hidden' menjadi varian target Tailwind --}}
 <div id="create-siswa"
     class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex justify-center items-center invisible opacity-0 scale-95 transition-all duration-200 target:visible target:opacity-100 target:scale-100">
 

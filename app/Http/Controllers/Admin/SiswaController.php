@@ -46,7 +46,7 @@ class SiswaController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'nis'         => 'required|numeric|digits_between:4,10|unique:siswa', // Tambahkan ini
+            'nis'         => 'required|numeric|digits_between:8,10|unique:siswa', // Tambahkan ini
             'nama'        => 'required',
             'kelas'       => 'required',
             'tahun_masuk' => 'required',
@@ -55,7 +55,7 @@ class SiswaController extends Controller
             'no_hp'       => ['required', 'regex:/^(08|628)[0-9]{8,12}$/'],
         ], [
             'nis.numeric' => 'NIS harus berupa angka.',
-            'nis.digits_between' => 'NIS harus berjumlah antara 4 sampai 10 digit.',
+            'nis.digits_between' => 'NIS harus berjumlah antara 8 sampai 10 digit.',
             'nis.unique' => 'NIS ini sudah terdaftar.',
             'no_hp.regex' => 'Format nomor HP tidak valid. Gunakan format 08... atau 628...',
         ]);
@@ -119,6 +119,18 @@ class SiswaController extends Controller
         $this->siswaService->delete($id);
 
         return redirect()->back()->with('success', 'Data berhasil dihapus');
+    }
+
+    // Tambahkan di dalam class SiswaController
+
+    public function kirimUlangAkun($id)
+    {
+        try {
+            $this->siswaService->resetAndSendAkun($id);
+            return back()->with('success', 'Password berhasil di-reset dan informasi akun baru telah dikirimkan ke WhatsApp orang tua.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal mengirim ulang akun: ' . $e->getMessage());
+        }
     }
 
     public function resetManual()

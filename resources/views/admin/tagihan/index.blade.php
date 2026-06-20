@@ -107,13 +107,6 @@ Tagihan
                     </td>
 
                     <td class="p-3 flex gap-2 justify-center items-center">
-                        {{-- Tombol Edit mengarah ke ID unik target modal --}}
-                        <a href="#modal-edit-{{ $item->id }}"
-                            class="bg-yellow-400 hover:bg-yellow-500 px-3 py-1.5 rounded text-white text-xs font-medium transition shadow-sm">
-                            Edit
-                        </a>
-                        @include('admin.tagihan.edit')
-
                         {{-- Form Hapus dengan Native Confirm --}}
                         <form action="{{ route('tagihan.destroy', $item->id) }}" method="POST"
                             onsubmit="return confirm('Apakah Anda yakin ingin menghapus data tagihan ini?')">

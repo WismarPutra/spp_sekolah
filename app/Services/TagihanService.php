@@ -75,10 +75,10 @@ class TagihanService
                     $siswa->increment('is_sent');
 
                     $bulanTeks = $namaBulan[(int)$tagihan->bulan] ?? $tagihan->bulan;
-                    $pesan = "Halo *{$siswa->nama}* 👋\n\nPemberitahuan Tagihan SPP:\n" .
+                    $pesan = "Kepada Yth Orang Tua/Wali Murid *{$siswa->nama}* 👋\n\nPemberitahuan Tagihan SPP:\n" .
                              "Bulan: *{$bulanTeks} {$tagihan->tahun}*\n" .
                              "Total: *Rp " . number_format($tagihan->jumlah, 0, ',', '.') . "*\n\n" .
-                             "Mohon segera diselesaikan pembayarannya. Terima kasih 🙏";
+                             "Mohon segera Melakukan pembayarannya. Terima kasih 🙏";
 
                     // Masukkan tugas ke antrean background job dengan interval delay 5 detik untuk menghindari spamming ban
                     KirimTagihanSppJob::dispatch([

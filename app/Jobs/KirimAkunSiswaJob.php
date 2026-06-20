@@ -29,10 +29,14 @@ class KirimAkunSiswaJob implements ShouldQueue
         sleep(5);
 
         $message =
-            "Halo {$this->nama},
-            Akun kamu sudah dibuat.
+            "Kepada Yth Orang Tua/Wali Murid {$this->nama},
+            Dengan hormat,
+            Kami informasikan bahwa akun Bapak/Ibu telah berhasil dibuat. Berikut adalah informasi akun yang dapat digunakan untuk login:
             Email: {$this->email}
-            Password: {$this->password}";
+            Password: {$this->password}
+            Mohon untuk menyimpan informasi akun tersebut dengan baik dan tidak membagikannya kepada pihak lain demi menjaga keamanan akun.
+            Atas perhatian dan kerja samanya, kami ucapkan terima kasih.
+            Hormat kami, Petugas Tata Usaha";
 
         $wa->send($this->no_hp, $message);
     }

@@ -128,6 +128,37 @@ class SiswaService
         });
     }
 
+    // Tambahkan di dalam class SiswaService
+
+    public function resetAndSendAkun($id)
+    {
+        return DB::transaction(function () use ($id) {
+            $siswa = Siswa::with('user')->findOrFail($id);
+
+            if (!$siswa->user) {
+                throw new \Exception('Data User pendukung untuk siswa ini tidak ditemukan.');
+            }
+
+            // Generate password baru secara acak
+            $passwordBaru = Str::random(8);
+
+            // Update password user ke database
+            $siswa->user->update([
+                'password' => Hash::make($passwordBaru)
+            ]);
+
+            // Picu Job untuk mengirimkan kredensial baru via WhatsApp Fonnte
+            KirimAkunSiswaJob::dispatch(
+                $siswa->no_hp,
+                $siswa->nama,
+                $siswa->user->email,
+                $passwordBaru
+            );
+
+            return $siswa;
+        });
+    }
+
     private function generateEmail($nama)
     {
         $namaDepan = Str::slug($nama, '.');

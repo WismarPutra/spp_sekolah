@@ -50,13 +50,18 @@
                     class="w-full border border-gray-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition font-medium text-gray-800">
             </div>
 
-            {{-- STATUS PEMBAYARAN (READ-ONLY / TIDAK BISA DIEDIT) --}}
+            {{-- STATUS PEMBAYARAN (BISA DIEDIT UNTUK KONDISI DARURAT) --}}
             <div class="mb-5">
-                <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Status Pembayaran</label>
-                <input type="text" value="{{ $item->status == 'lunas' ? 'Lunas' : 'Belum Lunas' }}"
-                    class="w-full border border-gray-100 bg-gray-50 text-gray-500 rounded-lg p-2.5 text-sm outline-none cursor-not-allowed font-semibold uppercase tracking-wider">
-                <p class="text-[11px] text-gray-400 mt-1">*Status ini dikunci. Perubahan status pembayaran hanya dapat
-                    divalidasi melalui modul transaksi utama / Midtrans Gateway.</p>
+                <label for="status-{{ $item->id }}" class="block text-xs font-bold text-gray-400 uppercase mb-1">Status
+                    Pembayaran</label>
+                <select name="status" id="status-{{ $item->id }}" required
+                    class="w-full border border-gray-200 rounded-lg p-2.5 text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none font-semibold text-gray-800">
+                    <option value="belum" {{ $item->status == 'belum' ? 'selected' : '' }}>BELUM LUNAS</option>
+                    <option value="lunas" {{ $item->status == 'lunas' ? 'selected' : '' }}>LUNAS (MANUAL / MIDTRANS
+                        GANGGUAN)</option>
+                </select>
+                <p class="text-[11px] text-amber-600 mt-1">*Ubah ke LUNAS hanya jika siswa sudah membayar sah melalui
+                    loket/bank namun Midtrans mengalami kendala callback.</p>
             </div>
 
             {{-- AKSI BUTTONS --}}

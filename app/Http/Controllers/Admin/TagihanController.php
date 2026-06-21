@@ -121,21 +121,39 @@ class TagihanController extends Controller
      * Update the specified resource in storage.
      */
     // Tambahan logika di TagihanController.php untuk method update
-    public function update(Request $request, string $id)
+    public function update(Request $request, string $id, \App\Services\TagihanService $tagihanService)
     {
         $request->validate([
             'bulan'  => 'required|integer|between:1,12',
             'tahun'  => 'required|integer',
             'jumlah' => 'required|numeric',
+            'status' => 'required|in:belum,lunas', // Tambahkan validasi status
         ]);
 
-        $tagihan = Tagihan::findOrFail($id);
+        $tagihan = Tagihan::with('siswa')->findOrFail($id);
 
-        // Melakukan update data tanpa mengubah kolom status pembayaran
+        // 1. Cek apakah admin mengubah status dari 'belum' menjadi 'lunas'
+        if ($tagihan->status === 'belum' && $request->status === 'lunas') {
+
+            // Update rinciannya dulu sebelum ditandai lunas
+            $tagihan->update([
+                'bulan'  => $request->bulan,
+                'tahun'  => $request->tahun,
+                'jumlah' => $request->jumlah,
+            ]);
+
+            // Gunakan TagihanService yang sudah kamu buat untuk memproses kelunasan & kirim WA Lunas otomatis
+            $tagihanService->markAsPaid($tagihan);
+
+            return redirect()->route('tagihan.index')->with('success', 'Tagihan berhasil diupdate dan diset LUNAS manual. WhatsApp bukti bayar telah dikirim.');
+        }
+
+        // 2. Jika status tidak diubah (tetap 'belum') atau kondisi lainnya
         $tagihan->update([
             'bulan'  => $request->bulan,
             'tahun'  => $request->tahun,
             'jumlah' => $request->jumlah,
+            'status' => $request->status,
         ]);
 
         return redirect()->route('tagihan.index')->with('success', 'Data rincian periode & nominal tagihan berhasil diperbarui.');

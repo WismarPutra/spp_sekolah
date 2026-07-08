@@ -17,7 +17,7 @@ class UserMiddleware
     public function handle(Request $request, Closure $next): Response
     {
         // Jika tidak login ATAU login tapi bukan admin
-        if (!Auth::check() || Auth::user()->role !== 'user') {
+        if (!Auth::check() || Auth::user()->role !== 'orang_tua') {
             return redirect('login')->with('error', 'Akses khusus Admin!');
         }
 

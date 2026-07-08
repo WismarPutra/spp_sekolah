@@ -31,7 +31,7 @@ class AuthController extends Controller
 
             if (Auth::user()->role == 'admin') {
                 return redirect('/admin/dashboard');
-            } elseif (Auth::user()->role == 'user') {
+            } elseif (Auth::user()->role == 'orang_tua') {
                 return redirect('/user/dashboard');
             }
         }

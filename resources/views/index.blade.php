@@ -100,7 +100,7 @@
             <p class="text-gray-600 leading-relaxed text-sm md:text-base">
                 SMK Utama Cianjur adalah sekolah kejuruan yang fokus pada
                 pengembangan keterampilan dan pengetahuan siswa dalam bidang
-                teknologi, bisnis, dan industri kreatif. Kami berkomitmen
+                otomotif dan akuntansi. Kami berkomitmen
                 untuk mencetak lulusan yang siap kerja dan kompeten.
             </p>
 

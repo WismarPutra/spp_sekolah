@@ -21,18 +21,27 @@ class DashboardController extends Controller
         $totalPembayaran = Pembayaran::where('status', 'paid')->count();
         $totalTunggakan = Tagihan::where('status', 'belum')->count();
 
-        // 2. Query Riwayat Pembayaran (Logika dari PembayaranController)
-        // Kita gunakan Tagihan agar bisa difilter bulannya
+        // 2. Query Riwayat Laporan Pembayaran (Berdasarkan Tagihan)
         $query = Tagihan::with('siswa');
 
         if ($request->filled('bulan')) {
             $query->where('bulan', $request->bulan);
         }
 
-        $laporan = $query->latest()->get();
+        // PENGURUTAN: Urutkan berdasarkan tahun terkecil ke terbesar, lalu bulan ke-1 sampai 12
+        $laporan = $query->orderBy('tahun', 'asc')
+            ->orderBy('bulan', 'asc')
+            ->get();
 
-        // 3. Data tambahan untuk modal/tabel (opsional jika masih butuh)
-        $pembayaran = Pembayaran::with(['tagihan.siswa'])->latest()->take(10)->get();
+        // 3. Data utama untuk Tabel Riwayat Pembayaran Terbaru di halaman Web
+       $pembayaran = Pembayaran::with(['tagihan.siswa'])
+        ->where('status', 'paid') // Memastikan hanya menampilkan yang sudah lunas
+        ->get()
+        ->sortBy([
+            ['tagihan.tahun', 'asc'],
+            ['tagihan.bulan', 'asc']
+        ])
+        ->take(10);
 
         return view('admin.dashboard.index', compact(
             'totalSiswa',
@@ -46,33 +55,42 @@ class DashboardController extends Controller
 
     public function exportLaporan(Request $request)
     {
-        // 1. Ambil data dengan filter bulan
-        $query = Tagihan::with('siswa');
-        if ($request->filled('bulan')) {
-            $query->where('bulan', $request->bulan);
+        $hariIni = now();
+        $bulanAktif = $hariIni->month;
+        $tahunAktif = $hariIni->year;
+
+        // 1. Inisialisasi Query Utama dan pastikan status sudah 'paid'
+        $query = Pembayaran::with(['tagihan.siswa'])->where('status', 'paid');
+
+        // 2. Cek tipe ekspor berdasarkan tombol yang diklik
+        if ($request->get('type') === 'toleransi') {
+            // Logika Masa Toleransi (Dari tanggal 15 jam 00:00 sampai 25 jam 23:59 di bulan berjalan)
+            $tanggalMulai = \Carbon\Carbon::create($tahunAktif, $bulanAktif, 15)->startOfDay();
+            $tanggalAkhir = \Carbon\Carbon::create($tahunAktif, $bulanAktif, 25)->endOfDay();
+
+            $query->whereBetween('tanggal_bayar', [$tanggalMulai, $tanggalAkhir]);
+            $fileName = 'Rekap_Bayar_Toleransi_15-25_' . $hariIni->format('F') . '_' . $tahunAktif . '.xlsx';
+        } else {
+            // Default: Logika Harian (Hanya transaksi tanggal hari ini saja)
+            $query->whereDate('tanggal_bayar', \Carbon\Carbon::today());
+            $fileName = 'Laporan_Harian_' . $hariIni->format('d-m-Y') . '.xlsx';
         }
-        $laporan = $query->latest()->get();
 
-        $listBulanIndo = [
-            1 => 'Januari',
-            2 => 'Februari',
-            3 => 'Maret',
-            4 => 'April',
-            5 => 'Mei',
-            6 => 'Juni',
-            7 => 'Juli',
-            8 => 'Agustus',
-            9 => 'September',
-            10 => 'Oktober',
-            11 => 'November',
-            12 => 'Desember'
-        ];
+        // Filter tambahan berdasarkan pilihan bulan jika ada di request
+        if ($request->filled('bulan')) {
+            $query->whereHas('tagihan', function ($q) use ($request) {
+                $q->where('bulan', $request->bulan);
+            });
+        }
 
-        // 2. Inisialisasi PhpSpreadsheet
+        // 3. PENGURUTAN: Mengurutkan dari tanggal bayar paling awal ke yang paling akhir (Kronologis berurutan)
+        $laporan = $query->orderBy('tanggal_bayar', 'asc')->get();
+
+        // 4. Inisialisasi PhpSpreadsheet
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
 
-        // 3. Set Header Kolom Excel (Menyesuaikan tabel Web kamu)
+        // 5. Set Header Kolom Excel
         $headers = [
             'No',
             'Nama Siswa',
@@ -95,37 +113,43 @@ class DashboardController extends Controller
         // Style untuk Header (Bold)
         $sheet->getStyle('A1:J1')->getFont()->setBold(true);
 
-        // 4. Isi Data Looping (Mulai dari Baris 2)
+        // 6. Isi Data Looping (Mulai dari Baris 2)
         $rowNum = 2;
-        foreach ($laporan as $index => $row) {
-            $bulanAngka = (int)$row->bulan;
-            $bulanTeks  = $listBulanIndo[$bulanAngka] ?? 'Bulan ' . $bulanAngka;
+        foreach ($laporan as $index => $bayar) {
+            $namaSiswa   = $bayar->tagihan->siswa->nama ?? 'Data Tidak Ditemukan';
+            $tahunMasuk  = $bayar->tagihan->siswa->tahun_masuk ?? '-';
+            $kelas       = $bayar->tagihan->siswa->kelas ?? '-';
+            $jurusan     = strtoupper($bayar->tagihan->siswa->jurusan ?? '-');
+            $bulanSpp    = $bayar->tagihan->bulan_text ?? '-';
+            $metodeBayar = strtoupper($bayar->metode ?? '-');
+            $jumlahBayar = $bayar->jumlah ?? 0;
 
-            // Ambil data metode pembayaran jika ada relasi ke tabel pembayaran, default ke '-'
-            $metodeBayar = $row->pembayaran->metode ?? '-';
+            $tanggalBayar = $bayar->tanggal_bayar
+                ? \Carbon\Carbon::parse($bayar->tanggal_bayar)->format('d-m-Y H:i') . ' WIB'
+                : '-';
+
+            $status      = strtoupper($bayar->status ?? '-');
 
             $sheet->setCellValue('A' . $rowNum, $index + 1);
-            $sheet->setCellValue('B' . $rowNum, $row->siswa->nama ?? 'Tidak Diketahui');
-            $sheet->setCellValue('C' . $rowNum, $row->siswa->tahun_masuk ?? 'N/A'); // Tambahan Tahun Masuk
-            $sheet->setCellValue('D' . $rowNum, $row->siswa->kelas ?? 'N/A');
-            $sheet->setCellValue('E' . $rowNum, strtoupper($row->siswa->jurusan ?? 'N/A'));
-            $sheet->setCellValue('F' . $rowNum, $bulanTeks . ' ' . $row->tahun);
-            $sheet->setCellValue('G' . $rowNum, strtoupper($metodeBayar)); // Tambahan Metode (Midtrans/Manual/dll)
-            $sheet->setCellValue('H' . $rowNum, $row->jumlah);
-            $sheet->setCellValue('I' . $rowNum, $row->updated_at ? $row->updated_at->format('d-m-Y H:i') : '-');
-            $sheet->setCellValue('J' . $rowNum, $row->status == 'lunas' ? 'Lunas' : 'Belum Bayar');
+            $sheet->setCellValue('B' . $rowNum, $namaSiswa);
+            $sheet->setCellValue('C' . $rowNum, $tahunMasuk);
+            $sheet->setCellValue('D' . $rowNum, $kelas);
+            $sheet->setCellValue('E' . $rowNum, $jurusan);
+            $sheet->setCellValue('F' . $rowNum, $bulanSpp);
+            $sheet->setCellValue('G' . $rowNum, $metodeBayar);
+            $sheet->setCellValue('H' . $rowNum, $jumlahBayar);
+            $sheet->setCellValue('I' . $rowNum, $tanggalBayar);
+            $sheet->setCellValue('J' . $rowNum, $status);
 
             $rowNum++;
         }
 
-        // 5. Otomatis Lebarkan Ukuran Kolom (A sampai J)
+        // 7. Otomatis Lebarkan Ukuran Kolom (A sampai J)
         foreach (range('A', 'J') as $col) {
             $sheet->getColumnDimension($col)->setAutoSize(true);
         }
 
-        // 6. Streaming response download file .xlsx
-        $fileName = 'Laporan_SPP_' . now()->format('d-m-Y') . '.xlsx';
-
+        // 8. Streaming response download file .xlsx
         $response = new StreamedResponse(function () use ($spreadsheet) {
             $writer = new Xlsx($spreadsheet);
             $writer->save('php://output');

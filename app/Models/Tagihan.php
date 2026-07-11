@@ -14,7 +14,8 @@ class Tagihan extends Model
         'bulan',
         'tahun',
         'jumlah',
-        'status'
+        'status',
+        'reminder_sent'
     ];
 
 

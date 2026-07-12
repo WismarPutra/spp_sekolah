@@ -80,6 +80,7 @@ Tagihan
                 <tr>
                     <th class="p-3">No</th>
                     <th class="p-3">Nama Siswa</th>
+                    <th class="p-3">Jurusan</th>
                     <th class="p-3">SPP</th>
                     <th class="p-3">Bulan</th>
                     <th class="p-3">Tahun</th>
@@ -94,6 +95,7 @@ Tagihan
                 <tr class="border-t border-gray-100 hover:bg-gray-50/50 transition">
                     <td class="p-3">{{ $loop->iteration }}</td>
                     <td class="p-3 font-medium text-gray-900">{{ $item->siswa->nama }}</td>
+                    <td class="p-3 font-medium text-gray-900">{{ $item->siswa->jurusan }}</td>
                     <td class="p-3">Rp {{ number_format($item->spp->nominal) }}</td>
                     <td class="p-3">{{ $item->bulan_text }}</td>
                     <td class="p-3">{{ $item->tahun }}</td>

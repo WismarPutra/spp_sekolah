@@ -10,8 +10,8 @@ class Pembayaran extends Model
     protected $fillable = [
         'tagihan_id',
         'metode',
-        'midtrans_order_id',
-        'snap_token',
+        'doku_order_id',
+        'payment_url',
         'jumlah',
         'tanggal_bayar',
         'status'

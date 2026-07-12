@@ -4,7 +4,7 @@ namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Services\MidtransService;
+use App\Services\DokuService;
 use App\Models\Tagihan;
 use App\Models\Pembayaran;
 use App\Models\Siswa;
@@ -34,7 +34,7 @@ class PembayaranController extends Controller
         return view('user.pembayaran.index', compact('tagihans', 'riwayat'));
     }
 
-    public function pay($id, MidtransService $midtrans)
+    public function pay($id, DokuService $doku)
     {
         try {
             $tagihan = Tagihan::with('siswa.user')->findOrFail($id);
@@ -45,13 +45,13 @@ class PembayaranController extends Controller
                 ->first();
 
             // 1. KITA SELALU BUAT ORDER ID BARU
-            // Supaya Midtrans menganggap ini permintaan baru & bisa ganti metode
+            // Supaya Doku menganggap ini permintaan baru & bisa ganti metode
             $orderId = 'SPP-' . $tagihan->id . '-' . time();
 
             if (!$pembayaran) {
                 $pembayaran = Pembayaran::create([
                     'tagihan_id'        => $tagihan->id,
-                    'midtrans_order_id' => $orderId,
+                    'doku_order_id'     => $orderId,
                     'jumlah'            => $tagihan->jumlah,
                     'metode'            => 'pending',
                     'status'            => 'pending',
@@ -60,44 +60,59 @@ class PembayaranController extends Controller
             } else {
                 // 2. Jika sudah ada data pending, timpa Order ID-nya dengan yang baru
                 $pembayaran->update([
-                    'midtrans_order_id' => $orderId,
-                    'snap_token' => null // Kosongkan dulu token lamanya
+                    'doku_order_id' => $orderId,
+                    'payment_url' => null // Kosongkan dulu URL lamanya
                 ]);
             }
 
-            // 3. Minta token baru ke Midtrans dengan Order ID yang baru
-            $snapToken = $midtrans->createTransaction($tagihan, $orderId);
+            // 3. Minta URL Checkout baru ke Doku dengan Order ID yang baru
+            $paymentUrl = $doku->createTransaction($tagihan, $orderId);
 
-            // 4. Simpan snap_token terbaru ke database
-            $pembayaran->update(['snap_token' => $snapToken]);
+            // 4. Simpan payment_url terbaru ke database
+            $pembayaran->update(['payment_url' => $paymentUrl]);
 
-            return response()->json(['snap_token' => $snapToken]);
+            return response()->json(['payment_url' => $paymentUrl]);
         } catch (\Exception $e) {
-            // ... (Logika penanganan error 400/407 Anda tetap dipertahankan) ...
             return response()->json(['message' => 'Error: ' . $e->getMessage()], 500);
         }
     }
 
     public function webhook(Request $request, TagihanService $tagihanService)
     {
-        try {
-            // SDK melakukan verifikasi signature secara otomatis
-            $notif = new \Midtrans\Notification();
-        } catch (\Exception $e) {
+        $clientId = $request->header('Client-Id');
+        $requestId = $request->header('Request-Id');
+        $timestamp = $request->header('Request-Timestamp');
+        $signature = $request->header('Signature');
+
+        if (!$clientId || !$requestId || !$timestamp || !$signature) {
+            return response()->json(['message' => 'Invalid Headers'], 400);
+        }
+
+        $jsonPayload = $request->getContent();
+        $digest = base64_encode(hash('sha256', $jsonPayload, true));
+        $signatureString = "Client-Id:" . config('doku.client_id') . "\n" .
+                           "Request-Id:" . $requestId . "\n" .
+                           "Request-Timestamp:" . $timestamp . "\n" .
+                           "Request-Target:" . $request->getRequestUri() . "\n" .
+                           "Digest:" . $digest;
+
+        $expectedSignature = 'HMACSHA256=' . base64_encode(hash_hmac('sha256', $signatureString, config('doku.secret_key'), true));
+
+        if ($signature !== $expectedSignature) {
             return response()->json(['message' => 'Verifikasi Gagal'], 403);
         }
 
-        $transaction = $notif->transaction_status;
-        $order_id = $notif->order_id;
+        $transactionStatus = $request->input('transaction.status');
+        $orderId = $request->input('order.invoice_number');
 
-        $pembayaran = Pembayaran::where('midtrans_order_id', $order_id)->first();
+        $pembayaran = Pembayaran::where('doku_order_id', $orderId)->first();
 
         if ($pembayaran) {
-            if (in_array($transaction, ['settlement', 'capture'])) {
+            if ($transactionStatus === 'SUCCESS') {
                 if ($pembayaran->status !== 'paid') {
                     $pembayaran->update([
                         'status' => 'paid',
-                        'metode' => $notif->payment_type,
+                        'metode' => $request->input('transaction.payment_method', 'DOKU'),
                         'tanggal_bayar' => now()
                     ]);
 
@@ -106,16 +121,14 @@ class PembayaranController extends Controller
                         $tagihanService->markAsPaid($tagihan);
                     }
                 }
-            } else if (in_array($transaction, ['kadaluwarsa', 'failure', 'cancel'])) {
+            } else if ($transactionStatus === 'FAILED' || $transactionStatus === 'EXPIRED') {
                 $pembayaran->update([
-                    'status' => 'failed', // atau 'expired' sesuai kebutuhan skripsimu
-                    'snap_token' => null
+                    'status' => 'failed',
+                    'payment_url' => null
                 ]);
-
-                // Logika tambahan: Tagihan tetap 'unpaid', snap_token bisa di-null-kan
-                // agar wali murid bisa melakukan checkout ulang.
             }
         }
+
         return response()->json(['status' => 'success']);
     }
 }

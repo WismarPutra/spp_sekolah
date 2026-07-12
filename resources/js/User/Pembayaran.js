@@ -14,24 +14,11 @@ document.addEventListener("DOMContentLoaded", function () {
             })
                 .then(response => response.json())
                 .then(data => {
-                    // Memanggil popup Snap
-                    window.snap.pay(data.snap_token, {
-                        onSuccess: function (result) {
-                            alert("Pembayaran berhasil!");
-                            location.reload();
-                        },
-                        onPending: function (result) {
-                            alert("Menunggu pembayaran Anda.");
-                            location.reload();
-                        },
-                        onError: function (result) {
-                            alert("Pembayaran gagal!");
-                            location.reload()
-                        },
-                        onClose: function () {
-                            alert('Anda menutup popup tanpa menyelesaikan pembayaran.');
-                        }
-                    });
+                    if (data.payment_url) {
+                        window.location.href = data.payment_url;
+                    } else {
+                        alert('Gagal mendapatkan URL pembayaran.');
+                    }
                 })
                 .catch(error => {
                     console.error('Error:', error);

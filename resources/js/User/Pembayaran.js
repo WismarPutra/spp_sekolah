@@ -12,7 +12,13 @@ document.addEventListener("DOMContentLoaded", function () {
                     'X-Requested-With': 'XMLHttpRequest'
                 }
             })
-                .then(response => response.json())
+                .then(async response => {
+                    const data = await response.json();
+                    if (!response.ok) {
+                        throw new Error(data.message || 'Terjadi kesalahan pada server');
+                    }
+                    return data;
+                })
                 .then(data => {
                     if (data.payment_url) {
                         loadJokulCheckout(data.payment_url);
@@ -22,7 +28,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('Terjadi kesalahan saat memproses pembayaran.');
+                    alert(error.message || 'Terjadi kesalahan saat memproses pembayaran.');
                 });
         });
     });

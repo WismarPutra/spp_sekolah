@@ -36,7 +36,7 @@ class SiswaService
                 'name' => $data['nama'],
                 'email' => $email,
                 'password' => Hash::make($passwordPlain),
-                'role' => 'user'
+                'role' => 'orang_tua'
             ]);
 
             // Create siswa

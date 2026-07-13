@@ -18,7 +18,7 @@ class UserMiddleware
     {
         // Jika tidak login ATAU login tapi bukan admin
         if (!Auth::check() || Auth::user()->role !== 'orang_tua') {
-            return redirect('login')->with('error', 'Akses khusus Admin!');
+            return redirect('login')->with('error', 'Akses khusus Orang Tua!');
         }
 
         return $next($request);

@@ -15,3 +15,9 @@ Schedule::command('tagihan:generate-otomatis')
  */
 Schedule::command('tagihan:reminder-otomatis')
     ->monthlyOn(25, '07:00');
+
+/**
+ * Otomatisasi: Mengulang pengiriman job/antrean yang gagal (seperti WhatsApp)
+ * Berjalan otomatis setiap jam
+ */
+Schedule::command('queue:retry all')->hourly();

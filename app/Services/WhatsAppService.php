@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Http;
 
 class WhatsAppService
 {
-    public function send($phone, $message)
+    public function send($phone, $message, $isRetry = false)
     {
         $token = config('services.fonnte.token');
 
@@ -21,11 +21,22 @@ class WhatsAppService
                 'countryCode' => '62',
             ]);
 
-            if ($response->failed()) {
+            $responseData = $response->json();
+
+            // Cek jika request HTTP gagal atau respons dari fonnte API false (misal device disconnect)
+            if ($response->failed() || (isset($responseData['status']) && $responseData['status'] === false)) {
                 \Log::error('Gagal kirim WA', [
                     'phone' => $phone,
-                    'response' => $response->body()
+                    'response' => $responseData ?? $response->body()
                 ]);
+
+                if ($isRetry) {
+                    // Jika ini dipanggil dari Job retry, lemparkan exception agar Laravel melakukan retry ulang sesuai backoff job
+                    throw new \Exception('Fonnte gagal: ' . json_encode($responseData ?? $response->body()));
+                } else {
+                    // Jika dipanggil pertama kali, lemparkan ke queue/job untuk dicoba lagi nanti
+                    \App\Jobs\RetryWhatsAppMessageJob::dispatch($phone, $message)->delay(now()->addMinutes(1));
+                }
             }
 
             return $response;
@@ -34,6 +45,14 @@ class WhatsAppService
                 'phone' => $phone,
                 'error' => $e->getMessage()
             ]);
+
+            if ($isRetry) {
+                // Lempar kembali exception agar Laravel Queue meretry ulang Job ini
+                throw $e;
+            } else {
+                // Masukkan antrean retry jika ada Exception (misal timeout, jaringan mati)
+                \App\Jobs\RetryWhatsAppMessageJob::dispatch($phone, $message)->delay(now()->addMinutes(1));
+            }
         }
     }
 

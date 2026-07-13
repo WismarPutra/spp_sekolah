@@ -15,7 +15,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 .then(response => response.json())
                 .then(data => {
                     if (data.payment_url) {
-                        window.location.href = data.payment_url;
+                        loadJokulCheckout(data.payment_url);
                     } else {
                         alert('Gagal mendapatkan URL pembayaran.');
                     }

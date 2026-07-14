@@ -29,7 +29,7 @@ class SiswaService
             $passwordPlain = Str::random(8);
 
             // Generate email
-            $email = $this->generateEmail($data['nama']);
+            $email = $this->generateEmail($data['nis']);
 
             // Create user
             $user = User::create([
@@ -70,6 +70,7 @@ class SiswaService
             $siswa = Siswa::with('user')->findOrFail($id);
 
             $noLama = $siswa->no_hp;
+            $nisLama = $siswa->nis;
             // Standardisasi nomor baru seperti saat create (62 -> 0)
             $noBaru = preg_replace('/^62/', '0', $data['no_hp']);
 
@@ -89,16 +90,26 @@ class SiswaService
                 $siswa->user->update([
                     'name' => $data['nama']
                 ]);
+
+                // 🔥 PERBAIKAN: Jika NIS berubah, email user di-generate ulang sesuai NIS baru
+                if ($nisLama != $data['nis']) {
+                    $userData['email'] = $this->generateEmail($data['nis']);
+                }
+
+                $siswa->user->update($userData);
             }
 
             // Cek perubahan nomor HP untuk kirim ulang akun via Queue
-            if ($noLama != $noBaru) {
+            if ($noLama != $noBaru || $nisLama != $data['nis']) {
                 $passwordBaru = Str::random(8);
 
                 if ($siswa->user) {
                     $siswa->user->update([
                         'password' => Hash::make($passwordBaru)
                     ]);
+
+                    // Ambil email terbaru yang sudah diupdate
+                    $emailAktif = $siswa->user->fresh()->email;
 
                     KirimAkunSiswaJob::dispatch(
                         $noBaru,
@@ -159,29 +170,25 @@ class SiswaService
         });
     }
 
-    private function generateEmail($nama)
+    private function generateEmail($nis)
     {
-        $namaDepan = Str::slug($nama, '.');
+        // Menghilangkan spasi atau karakter aneh jika ada pada NIS
+        $nisClean = trim($nis);
 
-        $parts = explode(' ', strtolower($nama));
-        $namaBelakang = implode('.', array_reverse($parts));
+        // Format email utama menggunakan NIS (contoh: 24251001@sppsmkutama.com)
+        $email = $nisClean . '@sppsmkutama.com';
 
-        $email1 = $namaDepan . '@sppsmkutama.com';
-        $email2 = $namaBelakang . '@sppsmkutama.com';
-
-        if (!User::where('email', $email1)->exists()) {
-            return $email1;
+        // Jika email dengan NIS tersebut belum ada di database, langsung gunakan
+        if (!User::where('email', $email)->exists()) {
+            return $email;
         }
 
-        if (!User::where('email', $email2)->exists()) {
-            return $email2;
-        }
-
+        // Antisipasi cadangan jika karena suatu alasan NIS double di sistem User (opsional)
         $counter = 1;
-        while (User::where('email', $namaDepan . $counter . '@sppsmkutama.com')->exists()) {
+        while (User::where('email', $nisClean . '.' . $counter . '@sppsmkutama.com')->exists()) {
             $counter++;
         }
 
-        return $namaDepan . $counter . '@sppsmkutama.com';
+        return $nisClean . '.' . $counter . '@sppsmkutama.com';
     }
 }

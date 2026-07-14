@@ -77,11 +77,16 @@ class TagihanService
                     $siswa->increment('is_sent');
 
                     $bulanTeks = $namaBulan[(int)$tagihan->bulan] ?? $tagihan->bulan;
-                    $pesan = "Kepada Yth Orang Tua/Wali Murid *{$siswa->nama}* 👋\n\nPemberitahuan Tagihan SPP:\n" .
-                             "Bulan: *{$bulanTeks} {$tagihan->tahun}*\n" .
-                             "Total: *Rp " . number_format($tagihan->jumlah, 0, ',', '.') . "*\n\n" .
-                             "Mohon segera Melakukan pembayarannya. Terima kasih 🙏";
+                    $pesan = "Kepada Yth. Orang Tua/Wali Murid *{$siswa->nama}* 👋
 
+                    Pemberitahuan Tagihan SPP:
+                    *Bulan:* {$bulanTeks} {$tagihan->tahun}
+                    *Total Tagihan:* Rp " . number_format($tagihan->jumlah, 0, ',', '.') . "
+
+                    Mohon segera melakukan pembayaran dengan login ke aplikasi SPP SMK Utama Cianjur melalui link berikut:
+                    https://smkutamaciranjang.sch.id/
+
+                    Terima kasih 🙏";
                     // Masukkan tugas ke antrean background job dengan interval delay 5 detik untuk menghindari spamming ban
                     KirimTagihanSppJob::dispatch([
                         'no_hp' => $siswa->no_hp,
@@ -135,11 +140,16 @@ class TagihanService
                     'status'   => 'belum',
                 ]);
 
-                $pesan = "Kepada Yth Orang Tua/Wali Murid *{$siswa->nama}* 👋\n\nPemberitahuan Tagihan SPP:\n" .
-                         "Bulan: *{$bulanTeks} {$tahun}*\n" .
-                         "Total: *Rp " . number_format($nominalSpp, 0, ',', '.') . "*\n\n" .
-                         "Mohon segera melakukan pembayaran melalui aplikasi pembayaran SPP SMK Utama Cianjur. Terima kasih 🙏";
+               $pesan = "Kepada Yth. Orang Tua/Wali Murid *{$siswa->nama}* 👋
 
+                Pemberitahuan Tagihan SPP:
+                *Bulan:* {$bulanTeks} {$tahun}
+                *Total Tagihan:* Rp " . number_format($nominalSpp, 0, ',', '.') . "
+
+                Mohon segera melakukan pembayaran dengan login ke aplikasi SPP SMK Utama Cianjur melalui link berikut:
+                https://smkutamaciranjang.sch.id/
+
+                Terima kasih 🙏";
                 KirimTagihanSppJob::dispatch([
                     'no_hp' => $siswa->no_hp,
                     'pesan' => $pesan
@@ -179,9 +189,17 @@ class TagihanService
                         "Sehubungan dengan hal tersebut, kami mengharapkan kehadiran Bapak/Ibu ke sekolah untuk berkoordinasi dengan bagian Tata Usaha SMK Utama Cianjur. Terima kasih.";
                 } else {
                     // Pesan Pengingat Biasa
-                    $pesan = "Halo Bapak/Ibu Wali Murid dari *{$siswa->nama}* 👋\n\n" .
-                        "Menginfokan kembali mengenai tagihan SPP bulan *{$bulanTeks} {$tagihan->tahun}* sebesar *Rp " . number_format($tagihan->jumlah, 0, ',', '.') . "* statusnya saat ini terpantau masih belum dilakukan pelunasan.\n\n" .
-                        "Mohon untuk segera menyelesaikan pembayaran sebelum batas waktu berakhir. Terima kasih atas perhatiannya 🙏";
+                    $pesan = "Halo Bapak/Ibu Wali Murid dari *{$siswa->nama}* 👋
+
+                    Menginfokan kembali mengenai tagihan SPP:
+                    *Bulan:* {$bulanTeks} {$tagihan->tahun}
+                    *Total Tagihan:* Rp " . number_format($tagihan->jumlah, 0, ',', '.') . "
+                    *Status:* Belum lunas
+
+                    Mohon untuk segera menyelesaikan pembayaran dengan login ke aplikasi SPP SMK Utama Cianjur melalui link berikut:
+                    https://smkutamaciranjang.sch.id/
+
+                    Terima kasih atas perhatiannya 🙏";
                 }
 
                 // 4. Masukkan ke Queue Job

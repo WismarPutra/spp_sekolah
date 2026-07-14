@@ -116,8 +116,7 @@ Tagihan
                         </a>
 
                         {{-- Form Hapus dengan Native Confirm --}}
-                        <form action="{{ route('tagihan.destroy', $item->id) }}" method="POST"
-                            onsubmit="return confirm('Apakah Anda yakin ingin menghapus data tagihan ini?')">
+                        <form action="{{ route('tagihan.destroy', $item->id) }}" method="POST" class="form-delete">
                             @csrf
                             @method('DELETE')
                             <button type="submit"

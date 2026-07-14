@@ -103,10 +103,11 @@ Data Siswa
                                 </a>
 
                                 <form action="{{ route('siswa.destroy', $siswa->id) }}" method="POST"
-                                    onsubmit="return confirm('Yakin ingin menghapus data siswa ini?')">
+                                    class="form-delete">
                                     @csrf
                                     @method('DELETE')
-                                    <button
+
+                                    <button type="submit"
                                         class="inline-flex items-center px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white text-xs font-bold rounded-lg transition duration-200 shadow-sm">
                                         <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor"
                                             viewBox="0 0 24 24">

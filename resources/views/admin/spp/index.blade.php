@@ -64,11 +64,10 @@ Data SPP
                                     Edit
                                 </a>
 
-                                <form action="{{ route('spp.destroy', $item->id) }}" method="POST"
-                                    onsubmit="return confirm('Yakin hapus data ini?')">
+                                <form action="{{ route('spp.destroy', $item->id) }}" method="POST" class="form-delete">
                                     @csrf
                                     @method('DELETE')
-                                    <button
+                                    <button type="submit"
                                         class="bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition">
                                         Hapus
                                     </button>

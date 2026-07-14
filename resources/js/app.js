@@ -1,5 +1,7 @@
 import './bootstrap';
 import './Admin/navAdmin';
-import './Admin/tagihan';
+import Swal from 'sweetalert2';
+window.Swal = Swal;
+import './Admin/popUpDelete';
 import './User/Pembayaran';
 import './User/navUser';

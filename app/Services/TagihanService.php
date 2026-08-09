@@ -61,7 +61,6 @@ class TagihanService
             // Eksekusi penyimpanan ke tabel tagihans jika parameter relasi valid
             if ($sppId && $jumlah > 0) {
                 $tagihan = Tagihan::create([
-                    'user_id'  => Auth::id(),
                     'siswa_id' => $siswa->id,
                     'spp_id'   => $sppId,
                     'bulan'    => $data['bulan'],
@@ -72,9 +71,6 @@ class TagihanService
 
                 if ($tagihan && $siswa->no_hp) {
                     $anyCreated = true;
-                    
-                    // Increment kolom counter log pengiriman
-                    $siswa->increment('is_sent');
 
                     $bulanTeks = $namaBulan[(int)$tagihan->bulan] ?? $tagihan->bulan;
                     $pesan = "Kepada Yth. Orang Tua/Wali Murid *{$siswa->nama}* 👋
@@ -128,11 +124,10 @@ class TagihanService
                           ->where('jurusan', $siswa->jurusan)
                           ->first();
 
-                $nominalSpp = $spp ? $spp->nominal : 150000; 
+                $nominalSpp = $spp ? $spp->nominal : 60000; 
 
                 Tagihan::create([
                     'siswa_id' => $siswa->id,
-                    'user_id'  => $siswa->user_id,
                     'spp_id'   => $spp ? $spp->id : null,
                     'bulan'    => $bulanAngka,
                     'tahun'    => $tahun,

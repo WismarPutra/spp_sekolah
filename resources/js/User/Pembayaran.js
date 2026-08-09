@@ -20,10 +20,11 @@ document.addEventListener("DOMContentLoaded", function () {
                     return data;
                 })
                 .then(data => {
-                    if (data.payment_url) {
-                        loadJokulCheckout(data.payment_url);
+                    // PERBAIKAN: Gunakan token_id, bukan payment_url
+                    if (data.token_id) {
+                        loadJokulCheckout(data.token_id);
                     } else {
-                        alert('Gagal mendapatkan URL pembayaran.');
+                        alert('Gagal mendapatkan Token pembayaran dari server.');
                     }
                 })
                 .catch(error => {

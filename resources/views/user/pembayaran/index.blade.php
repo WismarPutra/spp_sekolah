@@ -7,7 +7,40 @@ Pembayaran
 @section('mainUser')
 <div class="min-h-screen bg-gray-50 p-4 md:p-8 flex justify-center">
     <div class="w-full max-w-5xl">
-        <h1 class="text-xl md:text-2xl font-bold mb-6 text-gray-800 border-b pb-2">Tagihan Saya</h1>
+        <!-- Bagian Header Profil Siswa -->
+        <div class="mb-6 bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-gray-100 border-l-4 border-l-blue-500">
+            @if($siswa)
+                <table class="text-sm md:text-base font-bold text-gray-800 uppercase">
+                    <tbody>
+                        <tr>
+                            <td class="py-1 pr-4 w-24 md:w-32">NAMA</td>
+                            <td class="py-1 px-2 text-center">:</td>
+                            <td class="py-1">{{ $siswa->nama }}</td>
+                        </tr>
+                        <tr>
+                            <td class="py-1 pr-4">KELAS</td>
+                            <td class="py-1 px-2 text-center">:</td>
+                            <td class="py-1">{{ $siswa->kelas }}</td>
+                        </tr>
+                        <tr>
+                            <td class="py-1 pr-4">PROGRAM</td>
+                            <td class="py-1 px-2 text-center">:</td>
+                            <td class="py-1">{{ $siswa->jurusan }}</td>
+                        </tr>
+                        <tr>
+                            <td class="py-1 pr-4 align-top">ALAMAT</td>
+                            <td class="py-1 px-2 text-center align-top">:</td>
+                            <td class="py-1 tracking-widest ">
+                                {{ $siswa->alamat ?? '......................................................' }}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            @else
+                <h1 class="text-xl md:text-2xl font-bold text-gray-800">Tagihan Saya</h1>
+            @endif
+        </div>
+        </h1>
 
         <div class="grid gap-4">
             @forelse ($tagihans as $item)
@@ -62,9 +95,10 @@ Pembayaran
                             <tr
                                 class="bg-gray-50 text-gray-500 uppercase text-[10px] font-black tracking-widest border-b">
                                 <th class="p-4 text-center w-16">No</th>
-                                <th class="p-4 text-left">Metode</th>
+                                <th class="p-4 text-left">Bulan</th>
                                 <th class="p-4 text-left">Total</th>
                                 <th class="p-4 text-left">Tanggal</th>
+                                <th class="p-4 text-left">Metode Pembayaran</th>
                                 <th class="p-4 text-center w-32">Status</th>
                             </tr>
                         </thead>
@@ -72,14 +106,17 @@ Pembayaran
                             @forelse($riwayat as $tagihan)
                             <tr class="hover:bg-blue-50/30 transition-colors">
                                 <td class="p-4 text-center text-gray-400 font-medium">{{ $loop->iteration }}</td>
-                                <td class="p-4 font-semibold text-gray-700 uppercase">
-                                    {{ $tagihan->pembayaran->metode ?? 'Online' }}
+                                 <td class="p-4 text-gray-500 font-medium">
+                                    {{ $tagihan->bulan}}
                                 </td>
                                 <td class="p-4 font-bold text-gray-800">
                                     Rp{{ number_format($tagihan->jumlah, 0, ',', '.') }}
                                 </td>
                                 <td class="p-4 text-gray-500 font-medium">
                                     {{ $tagihan->updated_at->format('d/m/Y') }}
+                                </td>
+                                <td class="p-4 font-semibold text-gray-700 uppercase">
+                                    {{ $tagihan->pembayaran->metode ?? 'Online' }}
                                 </td>
                                 <td class="p-4 text-center">
                                     <span

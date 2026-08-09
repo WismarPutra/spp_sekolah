@@ -111,12 +111,6 @@ Tagihan
                     </td>
 
                     <td class="p-3 flex gap-2 justify-center items-center">
-                        {{-- TOMBOL EDIT (Memicu Modal :target) --}}
-                        <a href="#modal-edit-{{ $item->id }}"
-                            class="bg-amber-500 hover:bg-amber-600 px-3 py-1.5 rounded text-white text-xs font-medium transition shadow-sm inline-block">
-                            Edit
-                        </a>
-
                         {{-- Form Hapus dengan Native Confirm --}}
                         <form action="{{ route('tagihan.destroy', $item->id) }}" method="POST" class="form-delete">
                             @csrf
@@ -158,8 +152,6 @@ Tagihan
                         </button>
                         @endif
                         @endif
-                        {{-- INCLUDE MODAL EDIT DI SINI (Wajib di dalam loop agar mendapat context $item) --}}
-                        @include('admin.tagihan.edit')
                     </td>
                 </tr>
                 @empty

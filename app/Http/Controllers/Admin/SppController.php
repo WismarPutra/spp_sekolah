@@ -15,6 +15,11 @@ class SppController extends Controller
         return view('admin.spp.index', compact('spp'));
     }
 
+    public function create()
+    {
+        return view('admin.spp.create');
+    }
+
     public function store(Request $request)
     {
         $request->validate([
@@ -38,7 +43,13 @@ class SppController extends Controller
 
         Spp::create($request->all()); // Ini akan mengambil 'nominal' dari form
 
-        return redirect()->back()->with('success', 'Data SPP berhasil disimpan');
+        return redirect()->route('spp.index')->with('success', 'Data SPP berhasil disimpan');
+    }
+
+    public function edit($id)
+    {
+        $spp = Spp::findOrFail($id);
+        return view('admin.spp.edit', compact('spp'));
     }
 
     public function update(Request $request, $id)
@@ -59,7 +70,7 @@ class SppController extends Controller
         
         $spp->update($request->all());
 
-        return redirect()->back()->with('success', 'Data berhasil diupdate');
+        return redirect()->route('spp.index')->with('success', 'Data berhasil diupdate');
     }
 
     public function destroy($id)

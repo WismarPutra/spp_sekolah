@@ -31,7 +31,7 @@ class PembayaranController extends Controller
             ->where('status', 'lunas')
             ->get();
 
-        return view('user.pembayaran.index', compact('tagihans', 'riwayat'));
+        return view('user.pembayaran.index', compact('tagihans', 'riwayat', 'siswa'));
     }
 
     public function pay($id, DokuService $doku)
@@ -65,13 +65,21 @@ class PembayaranController extends Controller
                 ]);
             }
 
-            // 3. Minta URL Checkout baru ke Doku dengan Order ID yang baru
-            $paymentUrl = $doku->createTransaction($tagihan, $orderId);
+           // 3. Minta data Checkout baru ke Doku dengan Order ID yang baru
+            $paymentData = $doku->createTransaction($tagihan, $orderId);
 
-            // 4. Simpan payment_url terbaru ke database
+            // Ekstrak token_id dan url dari array balasan service
+            $tokenId = $paymentData['token_id'] ?? null;
+            $paymentUrl = $paymentData['url'] ?? null;
+
+            // 4. Simpan payment_url terbaru ke database (sebagai cadangan)
             $pembayaran->update(['payment_url' => $paymentUrl]);
 
-            return response()->json(['payment_url' => $paymentUrl]);
+            // 5. Kembalikan token_id ke frontend agar JavaScript bisa memicu pop-up Doku
+            return response()->json([
+                'token_id' => $tokenId,
+                'payment_url' => $paymentUrl
+            ]);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Error: ' . $e->getMessage()], 500);
         }

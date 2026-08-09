@@ -37,7 +37,7 @@ class SiswaController extends Controller
      */
     public function create()
     {
-        //
+        return view('admin.siswa.create');
     }
 
     /**
@@ -57,11 +57,12 @@ class SiswaController extends Controller
             'nis.numeric' => 'NIS harus berupa angka.',
             'nis.digits_between' => 'NIS harus berjumlah antara 8 sampai 10 digit.',
             'nis.unique' => 'NIS ini sudah terdaftar.',
+            'no_hp.required' => 'Nomor HP (WhatsApp) wajib diisi.',
             'no_hp.regex' => 'Format nomor HP tidak valid. Gunakan format 08... atau 628...',
         ]);
 
         $this->siswaService->create($request->all());
-        return redirect()->back()->with('success', 'Data siswa berhasil ditambahkan');
+        return redirect()->route('siswa.index')->with('success', 'Data siswa berhasil ditambahkan');
     }
     /**
      * Display the specified resource.
@@ -77,9 +78,9 @@ class SiswaController extends Controller
     public function edit(string $id)
     {
         // Data Siswa Berdasarkan ID
-        $dataSiswa = Siswa::findOrFail($id);
+        $siswa = Siswa::findOrFail($id);
         return view('admin.siswa.edit', compact(
-            'dataSiswa'
+            'siswa'
         ));
     }
 
@@ -92,7 +93,7 @@ class SiswaController extends Controller
         $request->validate([
             'nis'         => 'required|numeric|digits_between:4,10|unique:siswa,nis,' . $id,
             'nama'        => 'required',
-            'kelas'       => 'required', // Memakai 'kelas' pasca perbaikan name HTML
+            'kelas'       => 'required', 
             'tahun_masuk' => 'required',
             'jurusan'     => 'required',
             'alamat'      => 'required',
@@ -101,13 +102,14 @@ class SiswaController extends Controller
             'nis.numeric' => 'NIS harus berupa angka.',
             'nis.digits_between' => 'NIS harus berjumlah antara 4 sampai 10 digit.',
             'nis.unique' => 'NIS ini sudah terdaftar.',
+            'no_hp.required' => 'Nomor HP (WhatsApp) wajib diisi.',
             'no_hp.regex' => 'Format nomor HP tidak valid. Gunakan format 08... atau 628...',
         ]);
 
         // Kirim data bersih ke Service Layer
         $this->siswaService->update($id, $request->all());
 
-        return back()->with('success', 'Data berhasil diupdate');
+        return redirect()->route('siswa.index')->with('success', 'Data berhasil diupdate');
     }
 
     /**
@@ -130,25 +132,6 @@ class SiswaController extends Controller
             return back()->with('success', 'Password berhasil di-reset dan informasi akun baru telah dikirimkan ke WhatsApp orang tua.');
         } catch (\Exception $e) {
             return back()->with('error', 'Gagal mengirim ulang akun: ' . $e->getMessage());
-        }
-    }
-
-    public function resetManual()
-    {
-        try {
-            // 1. Reset status counter is_sent di tabel Siswa kembali ke angka 0
-            \App\Models\Siswa::query()->update(['is_sent' => 0]);
-
-            // 2. Opsional: Hapus tagihan bulan berjalan (menggunakan angka) jika ingin buat ulang dari awal
-            $bulanAngkaIni = (int)now()->format('n');
-            $tahunIni = now()->format('Y');
-
-            // Silakan hapus tanda komentar (//) di bawah jika ingin tagihan lama di bulan ini terhapus saat di-reset
-            // \App\Models\Tagihan::where('bulan', $bulanAngkaIni)->where('tahun', $tahunIni)->where('status', 'belum')->delete();
-
-            return back()->with('success', 'Status tagihan berhasil di-reset! Seluruh status kirim siswa kembali kosong dan siap di-generate ulang.');
-        } catch (\Exception $e) {
-            return back()->with('error', 'Gagal mereset data: ' . $e->getMessage());
         }
     }
 }

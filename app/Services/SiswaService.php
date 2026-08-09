@@ -87,15 +87,17 @@ class SiswaService
 
             // Update nama di User jika relasi ada
             if ($siswa->user) {
-                $siswa->user->update([
+                // Inisialisasi array dengan data nama
+                $userData = [
                     'name' => $data['nama']
-                ]);
+                ];
 
-                // 🔥 PERBAIKAN: Jika NIS berubah, email user di-generate ulang sesuai NIS baru
+                // Jika NIS berubah, tambahkan email ke dalam array update
                 if ($nisLama != $data['nis']) {
                     $userData['email'] = $this->generateEmail($data['nis']);
                 }
 
+                // Lakukan update sekaligus
                 $siswa->user->update($userData);
             }
 
@@ -124,7 +126,6 @@ class SiswaService
         });
     }
 
-    // 🔥 METHOD DELETE BARU
     public function delete($id)
     {
         return DB::transaction(function () use ($id) {

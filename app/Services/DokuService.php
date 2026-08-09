@@ -55,7 +55,7 @@ class DokuService
 
         $signature = 'HMACSHA256=' . base64_encode(hash_hmac('sha256', $signatureString, $this->secretKey, true));
 
-        $response = Http::withHeaders([
+       $response = Http::withHeaders([
             'Client-Id' => $this->clientId,
             'Request-Id' => $requestId,
             'Request-Timestamp' => $timestamp,
@@ -64,9 +64,12 @@ class DokuService
         ])->post($url, $payload);
 
         if ($response->successful()) {
-            return $response->json('response.payment.url');
+            // REVISI: Kembalikan seluruh array 'payment' agar token_id terbawa
+            return $response->json('response.payment'); 
         }
 
-        throw new \Exception('Doku API Error: ' . $response->body());
+        // Tambahan opsi keamanan: tangkap error secara lebih mendetail
+        $errorMsg = $response->json('error.message') ?? $response->body();
+        throw new \Exception('Doku API Error: ' . $errorMsg);
     }
 }

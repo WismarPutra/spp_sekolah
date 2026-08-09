@@ -9,7 +9,6 @@ class Tagihan extends Model
     protected $table = 'tagihan';
     protected $fillable = [
         'siswa_id',
-        'user_id',
         'spp_id',
         'bulan',
         'tahun',
@@ -34,11 +33,6 @@ class Tagihan extends Model
     public function spp()
     {
         return $this->belongsTo(Spp::class);
-    }
-
-    public function user()
-    {
-        return $this->belongsTo(User::class, 'user_id');
     }
 
     public function getBulanTextAttribute()

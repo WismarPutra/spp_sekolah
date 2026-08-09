@@ -38,26 +38,40 @@ Dashboard Admin
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h2 class="text-lg font-semibold text-gray-700">Riwayat Pembayaran Terbaru</h2>
 
-        <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-            <a href="{{ route('admin.dashboard.export', ['type' => 'harian', 'bulan' => request('bulan')]) }}"
-                class="inline-flex items-center justify-center bg-blue-600 text-white px-5 py-2.5 rounded-lg hover:bg-blue-700 transition duration-200 shadow-sm text-sm font-medium">
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
-                </svg>
-                Download Excel Harian
-            </a>
+        <!-- FORM FILTER & TOMBOL EXPORT -->
+        <form action="{{ route('admin.dashboard.export') }}" method="GET" class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+            
+            <!-- Tambahkan Dropdown Filter Bulan -->
+            <select name="bulan" class="border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full sm:w-auto p-2.5 outline-none">
+                @php
+                    $bulanSekarang = request('bulan') ?? now()->month;
+                    $namaBulan = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+                @endphp
+                @foreach(range(1, 12) as $b)
+                    <option value="{{ $b }}" {{ $b == $bulanSekarang ? 'selected' : '' }}>
+                        {{ $namaBulan[$b-1] }}
+                    </option>
+                @endforeach
+            </select>
 
-            <a href="{{ route('admin.dashboard.export', ['type' => 'toleransi']) }}"
-                class="inline-flex items-center justify-center bg-orange-600 text-white px-5 py-2.5 rounded-lg hover:bg-orange-700 transition duration-200 shadow-sm text-sm font-medium">
+            <!-- Tombol Export Harian -->
+            <button type="submit" name="type" value="harian"
+                class="inline-flex items-center justify-center bg-blue-600 text-white px-5 py-2.5 rounded-lg hover:bg-blue-700 transition duration-200 shadow-sm text-sm font-medium whitespace-nowrap">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 0h6">
-                    </path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
                 </svg>
-                Download Pembayaran Masa Toleransi (15-25)
-            </a>
-        </div>
+                Export Hari Ini
+            </button>
+
+            <!-- Tombol Export Bulanan (Semua Data + Tunggakan) -->
+            <button type="submit" name="type" value="bulanan"
+                class="inline-flex items-center justify-center bg-orange-600 text-white px-5 py-2.5 rounded-lg hover:bg-orange-700 transition duration-200 shadow-sm text-sm font-medium whitespace-nowrap">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 0h6"></path>
+                </svg>
+                Export Rekap 1 Bulan
+            </button>
+        </form>
     </div>
 
     <!-- TABLE CONTAINER: Menjaga layout tetap rapi di layar kecil -->

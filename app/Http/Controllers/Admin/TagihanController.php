@@ -167,13 +167,7 @@ class TagihanController extends Controller
         $tagihan = Tagihan::with('siswa')->findOrFail($id);
         // 2. Ambil objek siswanya
         $siswa = $tagihan->siswa;
-
-        // 3. Cek apakah data siswa ada dan is_sent lebih dari 0
-        if ($siswa && $siswa->is_sent > 0) {
-            $siswa->update([
-                'is_sent' => $siswa->is_sent - 1
-            ]);
-        }
+        
         $tagihan->delete();
 
         return redirect()->back()->with('success', 'Data berhasil dihapus');

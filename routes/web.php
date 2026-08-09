@@ -40,7 +40,6 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::get('/dashboard/export', [AdminDashboard::class, 'exportLaporan'])->name('admin.dashboard.export');
 
     Route::post('/admin/siswa/{id}/kirim-ulang-akun', [SiswaController::class, 'kirimUlangAkun'])->name('admin.siswa.kirimUlangAkun');
-    Route::post('/siswa/reset-manual', [SiswaController::class, 'resetManual'])->name('admin.siswa.reset');
 
     Route::resource('/siswa', SiswaController::class);
     Route::resource('/spp', SppController::class);

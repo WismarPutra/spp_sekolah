@@ -15,7 +15,6 @@ class Siswa extends Model
         'alamat',
         'jurusan',
         'no_hp',
-        'is_sent',
         'tahun_masuk'
     ];
 

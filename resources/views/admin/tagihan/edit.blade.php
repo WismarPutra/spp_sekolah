@@ -57,11 +57,11 @@
                 <select name="status" id="status-{{ $item->id }}" required
                     class="w-full border border-gray-200 rounded-lg p-2.5 text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none font-semibold text-gray-800">
                     <option value="belum" {{ $item->status == 'belum' ? 'selected' : '' }}>BELUM LUNAS</option>
-                    <option value="lunas" {{ $item->status == 'lunas' ? 'selected' : '' }}>LUNAS (MANUAL / DOKU
+                    <option value="lunas" {{ $item->status == 'lunas' ? 'selected' : '' }}>LUNAS (MANUAL / MIDTRANS
                         GANGGUAN)</option>
                 </select>
                 <p class="text-[11px] text-amber-600 mt-1">*Ubah ke LUNAS hanya jika siswa sudah membayar sah melalui
-                    loket/bank namun Doku mengalami kendala callback.</p>
+                    loket/bank namun Midtrans mengalami kendala callback.</p>
             </div>
 
             {{-- AKSI BUTTONS --}}

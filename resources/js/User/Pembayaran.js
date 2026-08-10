@@ -20,9 +20,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     return data;
                 })
                 .then(data => {
-                    // PERBAIKAN: Gunakan token_id, bukan payment_url
-                    if (data.token_id) {
-                        loadJokulCheckout(data.token_id);
+                    if (data.snap_token) {
+                        window.snap.pay(data.snap_token);
                     } else {
                         alert('Gagal mendapatkan Token pembayaran dari server.');
                     }

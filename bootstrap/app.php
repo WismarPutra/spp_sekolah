@@ -15,7 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         // 1. Tambahkan pengecualian CSRF di sini
         $middleware->validateCsrfTokens(except: [
-            'api/doku-callback', // Sesuaikan dengan route di api.php Anda
+            'api/midtrans-callback', // Sesuaikan dengan route di api.php Anda
         ]);
 
         $middleware->alias([

@@ -110,47 +110,49 @@ Dashboard Admin
                         <td class="px-4 py-4 text-center text-sm text-gray-500">{{ $loop->iteration }}</td>
                         <td class="px-4 py-4">
                             <div class="text-sm font-semibold text-gray-900">
-                                {{ $bayar->tagihan->siswa->nama ?? 'Data Tidak Ditemukan' }}
+                                {{ $bayar->siswa->nama ?? 'Data Tidak Ditemukan' }}
                             </div>
                         </td>
                         <td class="px-4 py-4">
                             <div class="text-sm text-gray-700">
-                                {{ $bayar->tagihan->siswa->tahun_masuk ?? '-' }}
+                                {{ $bayar->siswa->tahun_masuk ?? '-' }}
                             </div>
                         </td>
                         <td class="px-4 py-4">
-                            <div class="text-sm text-gray-700 font-medium">{{ $bayar->tagihan->siswa->kelas ?? '-' }}
+                            <div class="text-sm text-gray-700 font-medium">{{ $bayar->siswa->kelas ?? '-' }}
                             </div>
                         </td>
                         <td class="px-4 py-4">
-                            <div class="text-sm text-gray-700">{{ $bayar->tagihan->siswa->jurusan ?? '-' }}</div>
+                            <div class="text-sm text-gray-700">{{ $bayar->siswa->jurusan ?? '-' }}</div>
                         </td>
                         <td class="px-4 py-4 text-center">
-                            <div class="text-sm text-gray-700 font-medium">{{$bayar->tagihan->bulan_text ?? '-'}}</div>
+                            <div class="text-sm text-gray-700 font-medium">{{$bayar->bulan_text ?? '-'}}</div>
                         </td>
                         <td class="px-4 py-4 text-center">
                             <span class="inline-flex px-2 py-1 text-[10px] font-bold bg-gray-100 text-gray-600 rounded">
-                                {{ strtoupper($bayar->metode) }}
+                                {{ strtoupper($bayar->metode ?? '-') }}
                             </span>
                         </td>
                         <td class="px-4 py-4 text-right text-sm font-bold text-gray-900">
                             Rp {{ number_format($bayar->jumlah, 0, ',', '.') }}
                         </td>
                         <td class="px-4 py-4 text-center text-sm text-gray-600">
-                            {{ \Carbon\Carbon::parse($bayar->tanggal_bayar)->format('d/m/Y') }}
+                            {{ $bayar->tanggal_bayar ? \Carbon\Carbon::parse($bayar->tanggal_bayar)->format('d/m/Y') : '-' }}
+                            @if($bayar->tanggal_bayar)
                             <span
                                 class="block text-[10px] text-gray-400 font-medium">{{ \Carbon\Carbon::parse($bayar->tanggal_bayar)->format('H:i') }}
                                 WIB</span>
+                            @endif
                         </td>
                         <td class="px-4 py-4 text-center">
                             @php
-                            $statusColor = $bayar->status == 'paid' ? 'bg-green-100 text-green-700 border-green-200' :
+                            $statusColor = $bayar->status == 'lunas' ? 'bg-green-100 text-green-700 border-green-200' :
                             'bg-red-100 text-red-700 border-red-200';
                             @endphp
                             <span
                                 class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold border {{ $statusColor }}">
                                 <span
-                                    class="w-1.5 h-1.5 mr-1.5 rounded-full {{ $bayar->status == 'paid' ? 'bg-green-500' : 'bg-red-500' }}"></span>
+                                    class="w-1.5 h-1.5 mr-1.5 rounded-full {{ $bayar->status == 'lunas' ? 'bg-green-500' : 'bg-red-500' }}"></span>
                                 {{ strtoupper($bayar->status) }}
                             </span>
                         </td>

@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Services\MidtransService;
 use App\Models\Tagihan;
-use App\Models\Pembayaran;
+
 use App\Models\Siswa;
 use App\Services\TagihanService;
 
@@ -26,8 +26,7 @@ class PembayaranController extends Controller
             ->get();
 
         // Tagihan yang sudah lunas (Muncul di Tabel bawah)
-        $riwayat = Tagihan::with('pembayaran')
-            ->where('siswa_id', $siswa->id)
+        $riwayat = Tagihan::where('siswa_id', $siswa->id)
             ->where('status', 'lunas')
             ->get();
 
@@ -39,38 +38,13 @@ class PembayaranController extends Controller
         try {
             $tagihan = Tagihan::with('siswa.user')->findOrFail($id);
 
-            // Cari data pembayaran yang statusnya masih pending
-            $pembayaran = Pembayaran::where('tagihan_id', $tagihan->id)
-                ->where('status', 'pending')
-                ->first();
-
-            // 1. KITA SELALU BUAT ORDER ID BARU
+            // Buat Order ID Baru (Format: SPP-{tagihan_id}-{timestamp})
             $orderId = 'SPP-' . $tagihan->id . '-' . time();
 
-            if (!$pembayaran) {
-                $pembayaran = Pembayaran::create([
-                    'tagihan_id'        => $tagihan->id,
-                    'midtrans_order_id' => $orderId,
-                    'jumlah'            => $tagihan->jumlah,
-                    'metode'            => 'pending',
-                    'status'            => 'pending',
-                    'tanggal_bayar'     => now(),
-                ]);
-            } else {
-                // 2. Jika sudah ada data pending, timpa Order ID-nya dengan yang baru
-                $pembayaran->update([
-                    'midtrans_order_id' => $orderId,
-                    'snap_token' => null // Kosongkan dulu token lamanya
-                ]);
-            }
-
-           // 3. Minta data Snap Token baru ke Midtrans
+            // Minta data Snap Token baru ke Midtrans
             $snapToken = $midtrans->createTransaction($tagihan, $orderId);
 
-            // 4. Simpan snap_token terbaru ke database (sebagai cadangan)
-            $pembayaran->update(['snap_token' => $snapToken]);
-
-            // 5. Kembalikan snap_token ke frontend agar JavaScript bisa memicu pop-up
+            // Kembalikan snap_token ke frontend agar JavaScript bisa memicu pop-up
             return response()->json([
                 'snap_token' => $snapToken
             ]);
@@ -95,27 +69,46 @@ class PembayaranController extends Controller
             return response()->json(['message' => 'Verifikasi Gagal'], 403);
         }
 
-        $pembayaran = Pembayaran::where('midtrans_order_id', $orderId)->first();
+        // Ekstrak tagihan_id dari order_id (Format: SPP-{tagihan_id}-{timestamp})
+        if ($orderId) {
+            $parts = explode('-', $orderId);
+            $tagihanId = $parts[1] ?? null;
 
-        if ($pembayaran) {
-            if ($transactionStatus === 'capture' || $transactionStatus === 'settlement') {
-                if ($pembayaran->status !== 'paid') {
-                    $pembayaran->update([
-                        'status' => 'paid',
-                        'metode' => $payload['payment_type'] ?? 'Midtrans',
-                        'tanggal_bayar' => now()
-                    ]);
+            if ($tagihanId) {
+                $tagihan = Tagihan::find($tagihanId);
 
-                    $tagihan = $pembayaran->tagihan;
-                    if ($tagihan) {
-                        $tagihanService->markAsPaid($tagihan);
+                if ($tagihan) {
+                    if ($transactionStatus === 'capture' || $transactionStatus === 'settlement') {
+                        if ($tagihan->status !== 'lunas') {
+                            $metode = $payload['payment_type'] ?? 'Midtrans';
+
+                            // Ekstrak nama bank atau gerai retail (Alfamart/Indomaret)
+                            if ($metode === 'bank_transfer') {
+                                if (isset($payload['va_numbers'][0]['bank'])) {
+                                    $metode = $payload['va_numbers'][0]['bank'];
+                                } elseif (isset($payload['permata_va_number'])) {
+                                    $metode = 'permata';
+                                }
+                            } elseif ($metode === 'echannel') {
+                                $metode = 'mandiri'; // Mandiri Bill
+                            } elseif ($metode === 'cstore') {
+                                if (isset($payload['store'])) {
+                                    $metode = $payload['store']; // alfamart atau indomaret
+                                }
+                            }
+
+                            $tagihan->update([
+                                'status' => 'lunas',
+                                'metode' => $metode,
+                                'tanggal_bayar' => now()
+                            ]);
+
+                            $tagihanService->markAsPaid($tagihan);
+                        }
                     }
+                    // Jika gagal/cancel/expire, kita abaikan saja karena tidak ada state 'failed' di Tagihan.
+                    // Status Tagihan tetap 'belum'.
                 }
-            } else if ($transactionStatus === 'cancel' || $transactionStatus === 'deny' || $transactionStatus === 'expire') {
-                $pembayaran->update([
-                    'status' => 'failed',
-                    'snap_token' => null
-                ]);
             }
         }
 

@@ -21,7 +21,22 @@ document.addEventListener("DOMContentLoaded", function () {
                 })
                 .then(data => {
                     if (data.snap_token) {
-                        window.snap.pay(data.snap_token);
+                        window.snap.pay(data.snap_token, {
+                            onSuccess: function(result){
+                                // Pembayaran berhasil, refresh halaman
+                                window.location.reload();
+                            },
+                            onPending: function(result){
+                                // Menunggu pembayaran (misal VA), refresh halaman
+                                window.location.reload();
+                            },
+                            onError: function(result){
+                                alert("Gagal memproses pembayaran!");
+                            },
+                            onClose: function(){
+                                // User menutup popup tanpa aksi
+                            }
+                        });
                     } else {
                         alert('Gagal mendapatkan Token pembayaran dari server.');
                     }

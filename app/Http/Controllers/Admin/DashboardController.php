@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Siswa;
 use App\Models\Tagihan;
-use App\Models\Pembayaran;
+
 use App\Services\TagihanService;
 use Carbon\Carbon;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -29,7 +29,7 @@ class DashboardController extends Controller
 
         $totalSiswa = Siswa::count();
         $totalTagihan = Tagihan::count();
-        $totalPembayaran = Pembayaran::where('status', 'paid')->count();
+        $totalPembayaran = Tagihan::where('status', 'lunas')->count();
         $totalTunggakan = Tagihan::where('status', 'belum')->count();
 
         $query = Tagihan::with('siswa');
@@ -38,10 +38,10 @@ class DashboardController extends Controller
         }
         $laporan = $query->orderBy('tahun', 'asc')->orderBy('bulan', 'asc')->get();
 
-        $pembayaran = Pembayaran::with(['tagihan.siswa'])
-            ->where('status', 'paid')
-            ->get()
-            ->sortBy([['created_at', 'desc']]);
+        $pembayaran = Tagihan::with('siswa')
+            ->where('status', 'lunas')
+            ->orderBy('tanggal_bayar', 'desc')
+            ->get();
 
         return view('admin.dashboard.index', compact(
             'totalSiswa', 'totalTagihan', 'totalPembayaran', 'totalTunggakan', 'laporan', 'pembayaran'
@@ -96,17 +96,14 @@ class DashboardController extends Controller
      */
     private function getLaporanBulanan($bulan, $tahun)
     {
-        $tagihans = Tagihan::with(['siswa', 'pembayaran' => function ($q) {
-            $q->where('status', 'paid');
-        }])
+        $tagihans = Tagihan::with('siswa')
         ->where('bulan', $bulan)
         ->where('tahun', $tahun)
         ->orderBy('status', 'asc')
         ->get();
 
         return $tagihans->map(function ($tagihan) {
-            $pembayaran = $tagihan->pembayaran;
-            $isLunas = $tagihan->status === 'lunas' && $pembayaran;
+            $isLunas = $tagihan->status === 'lunas';
 
             return [
                 'nama'        => $tagihan->siswa->nama ?? '-',
@@ -114,9 +111,9 @@ class DashboardController extends Controller
                 'kelas'       => $tagihan->siswa->kelas ?? '-',
                 'jurusan'     => strtoupper($tagihan->siswa->jurusan ?? '-'),
                 'bulan_spp'   => $tagihan->bulan_text ?? '-',
-                'metode'      => $isLunas ? strtoupper($pembayaran->metode) : '-',
-                'jumlah'      => $isLunas ? $pembayaran->jumlah : $tagihan->jumlah,
-                'tanggal'     => $isLunas ? Carbon::parse($pembayaran->tanggal_bayar)->format('d-m-Y H:i') . ' WIB' : '-',
+                'metode'      => $isLunas ? strtoupper($tagihan->metode ?? '-') : '-',
+                'jumlah'      => $tagihan->jumlah,
+                'tanggal'     => $isLunas && $tagihan->tanggal_bayar ? Carbon::parse($tagihan->tanggal_bayar)->format('d-m-Y H:i') . ' WIB' : '-',
                 'status'      => $isLunas ? 'LUNAS' : 'BELUM BAYAR',
             ];
         });
@@ -127,22 +124,22 @@ class DashboardController extends Controller
      */
     private function getLaporanHarian()
     {
-        $pembayarans = Pembayaran::with(['tagihan.siswa'])
-            ->where('status', 'paid')
+        $tagihans = Tagihan::with('siswa')
+            ->where('status', 'lunas')
             ->whereDate('tanggal_bayar', Carbon::today())
             ->orderBy('tanggal_bayar', 'asc')
             ->get();
 
-        return $pembayarans->map(function ($bayar) {
+        return $tagihans->map(function ($tagihan) {
             return [
-                'nama'        => $bayar->tagihan->siswa->nama ?? '-',
-                'tahun_masuk' => $bayar->tagihan->siswa->tahun_masuk ?? '-',
-                'kelas'       => $bayar->tagihan->siswa->kelas ?? '-',
-                'jurusan'     => strtoupper($bayar->tagihan->siswa->jurusan ?? '-'),
-                'bulan_spp'   => $bayar->tagihan->bulan_text ?? '-',
-                'metode'      => strtoupper($bayar->metode ?? '-'),
-                'jumlah'      => $bayar->jumlah ?? 0,
-                'tanggal'     => Carbon::parse($bayar->tanggal_bayar)->format('d-m-Y H:i') . ' WIB',
+                'nama'        => $tagihan->siswa->nama ?? '-',
+                'tahun_masuk' => $tagihan->siswa->tahun_masuk ?? '-',
+                'kelas'       => $tagihan->siswa->kelas ?? '-',
+                'jurusan'     => strtoupper($tagihan->siswa->jurusan ?? '-'),
+                'bulan_spp'   => $tagihan->bulan_text ?? '-',
+                'metode'      => strtoupper($tagihan->metode ?? '-'),
+                'jumlah'      => $tagihan->jumlah ?? 0,
+                'tanggal'     => $tagihan->tanggal_bayar ? Carbon::parse($tagihan->tanggal_bayar)->format('d-m-Y H:i') . ' WIB' : '-',
                 'status'      => 'LUNAS',
             ];
         });

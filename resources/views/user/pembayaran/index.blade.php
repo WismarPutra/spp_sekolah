@@ -116,7 +116,7 @@ Pembayaran
                                     {{ $tagihan->updated_at->format('d/m/Y') }}
                                 </td>
                                 <td class="p-4 font-semibold text-gray-700 uppercase">
-                                    {{ $tagihan->pembayaran->metode ?? 'Online' }}
+                                    {{ $tagihan->metode ?? 'Online' }}
                                 </td>
                                 <td class="p-4 text-center">
                                     <span

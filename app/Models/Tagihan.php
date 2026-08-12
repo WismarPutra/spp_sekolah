@@ -14,7 +14,9 @@ class Tagihan extends Model
         'tahun',
         'jumlah',
         'status',
-        'reminder_sent'
+        'reminder_sent',
+        'metode',
+        'tanggal_bayar'
     ];
 
 
@@ -24,11 +26,6 @@ class Tagihan extends Model
         return $this->belongsTo(Siswa::class, 'siswa_id');
     }
 
-    public function pembayaran()
-    {
-        // Asumsi: satu tagihan memiliki satu catatan pembayaran
-        return $this->hasOne(Pembayaran::class, 'tagihan_id');
-    }
 
     public function spp()
     {
@@ -53,5 +50,19 @@ class Tagihan extends Model
         ];
 
         return $listBulan[(int)$this->bulan] ?? $this->bulan;
+    }
+
+    public function getMetodeAttribute($value)
+    {
+        if (!$value) {
+            return 'Online';
+        }
+
+        $val = strtoupper($value);
+        if (in_array($val, ['BCA', 'BNI', 'BRI', 'BSI', 'MANDIRI', 'PERMATA', 'QRIS', 'GOPAY', 'SHOPEEPAY'])) {
+            return $val;
+        }
+        
+        return ucwords(str_replace('_', ' ', $value));
     }
 }

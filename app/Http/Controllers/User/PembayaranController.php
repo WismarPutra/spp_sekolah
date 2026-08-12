@@ -33,7 +33,7 @@ class PembayaranController extends Controller
         return view('user.pembayaran.index', compact('tagihans', 'riwayat', 'siswa'));
     }
 
-    public function pay($id, MidtransService $midtrans)
+    public function pay(Request $request, $id, MidtransService $midtrans)
     {
         try {
             $tagihan = Tagihan::with('siswa.user')->findOrFail($id);
@@ -41,8 +41,25 @@ class PembayaranController extends Controller
             // Buat Order ID Baru (Format: SPP-{tagihan_id}-{timestamp})
             $orderId = 'SPP-' . $tagihan->id . '-' . time();
 
+            // Tangkap metode yang dipilih
+            $method = $request->query('method');
+            $adminFee = 0;
+
+            if ($method) {
+                // Kalkulasi admin fee
+                if (in_array($method, ['bca_va', 'bni_va', 'bri_va', 'echannel'])) {
+                    $adminFee = 4500;
+                } elseif (in_array($method, ['alfamart', 'indomaret'])) {
+                    $adminFee = 5000;
+                } elseif ($method === 'qris') {
+                    $adminFee = (int) round($tagihan->jumlah * 0.007); // 0.7%
+                } elseif (in_array($method, ['gopay', 'shopeepay'])) {
+                    $adminFee = (int) round($tagihan->jumlah * 0.02); // 2%
+                }
+            }
+
             // Minta data Snap Token baru ke Midtrans
-            $snapToken = $midtrans->createTransaction($tagihan, $orderId);
+            $snapToken = $midtrans->createTransaction($tagihan, $orderId, $method, $adminFee);
 
             // Kembalikan snap_token ke frontend agar JavaScript bisa memicu pop-up
             return response()->json([

@@ -41,9 +41,9 @@ class PembayaranController extends Controller
             // Buat Order ID Baru (Format: SPP-{tagihan_id}-{timestamp})
             $orderId = 'SPP-' . $tagihan->id . '-' . time();
 
-            // Tangkap metode yang dipilih (opsional jika diteruskan ke Pakasir)
-            $method = $request->query('method');
-            $adminFee = 0; // Biaya admin dihapus sementara
+            // Biarkan pengguna memilih metode pembayaran di halaman Pakasir
+            $method = null;
+            $adminFee = 0;
 
             // Dapatkan URL Pembayaran dari Pakasir
             $paymentUrl = $pakasir->createPaymentUrl($tagihan, $orderId, $method, $adminFee);

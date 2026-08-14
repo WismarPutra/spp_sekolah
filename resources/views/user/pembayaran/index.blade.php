@@ -67,11 +67,13 @@ Pembayaran
                     @if($item->status != 'lunas')
                     <div class="w-full sm:w-auto pt-2 sm:pt-0">
                         <button
-                            class="open-modal-button w-full sm:w-48 bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-green-100 active:scale-95"
-                            data-url="{{ route('user.pay', $item->id) }}"
-                            data-tagihan-id="{{ $item->id }}"
-                            data-tagihan-bulan="{{ $item->bulan_text }} {{ $item->tahun }}">
-                            Bayar Sekarang
+                            class="pay-direct-btn w-full sm:w-48 bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-green-100 active:scale-95 flex justify-center items-center gap-2"
+                            data-url="{{ route('user.pay', $item->id) }}">
+                            <span>Bayar Sekarang</span>
+                            <svg class="btn-spinner hidden h-5 w-5 text-white animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
                         </button>
                     </div>
                     @endif
@@ -142,111 +144,6 @@ Pembayaran
     </div>
 </div>
 
-<!-- Modal Pemilihan Metode Pembayaran -->
-<div id="paymentModal" class="fixed inset-0 z-50 hidden bg-gray-900 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center backdrop-blur-sm transition-opacity duration-300">
-    <div class="relative w-full max-w-md bg-white rounded-2xl shadow-2xl m-4 transform scale-95 transition-transform duration-300">
-        <!-- Header -->
-        <div class="flex justify-between items-center p-5 border-b border-gray-100">
-            <h3 class="text-lg font-bold text-gray-800">Pilih Metode Pembayaran</h3>
-            <button id="closeModalBtn" class="text-gray-400 hover:text-red-500 transition-colors focus:outline-none">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-            </button>
-        </div>
 
-        <!-- Body -->
-        <div class="p-5">
-            <p class="text-sm text-gray-500 mb-4">Pilih jalur pembayaran untuk SPP <span id="modalBulanText" class="font-bold text-gray-700"></span>. Setiap metode mungkin memiliki biaya admin yang berbeda.</p>
-            
-            <div class="space-y-3 max-h-[60vh] overflow-y-auto pr-1">
-                <!-- Virtual Account -->
-                <label class="flex items-center p-4 border border-gray-200 rounded-xl cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-all">
-                    <input type="radio" name="payment_method" value="bca_va" class="w-5 h-5 text-blue-600 border-gray-300 focus:ring-blue-500">
-                    <div class="ml-3 flex-1">
-                        <span class="block text-sm font-bold text-gray-800">BCA Virtual Account</span>
-                        <span class="block text-xs text-gray-500">+ Biaya Admin Rp 4.500</span>
-                    </div>
-                </label>
-                
-                <label class="flex items-center p-4 border border-gray-200 rounded-xl cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-all">
-                    <input type="radio" name="payment_method" value="bni_va" class="w-5 h-5 text-blue-600 border-gray-300 focus:ring-blue-500">
-                    <div class="ml-3 flex-1">
-                        <span class="block text-sm font-bold text-gray-800">BNI Virtual Account</span>
-                        <span class="block text-xs text-gray-500">+ Biaya Admin Rp 4.500</span>
-                    </div>
-                </label>
-
-                <label class="flex items-center p-4 border border-gray-200 rounded-xl cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-all">
-                    <input type="radio" name="payment_method" value="bri_va" class="w-5 h-5 text-blue-600 border-gray-300 focus:ring-blue-500">
-                    <div class="ml-3 flex-1">
-                        <span class="block text-sm font-bold text-gray-800">BRI Virtual Account</span>
-                        <span class="block text-xs text-gray-500">+ Biaya Admin Rp 4.500</span>
-                    </div>
-                </label>
-
-                <label class="flex items-center p-4 border border-gray-200 rounded-xl cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-all">
-                    <input type="radio" name="payment_method" value="echannel" class="w-5 h-5 text-blue-600 border-gray-300 focus:ring-blue-500">
-                    <div class="ml-3 flex-1">
-                        <span class="block text-sm font-bold text-gray-800">Mandiri Bill</span>
-                        <span class="block text-xs text-gray-500">+ Biaya Admin Rp 4.500</span>
-                    </div>
-                </label>
-
-                <!-- Retail -->
-                <label class="flex items-center p-4 border border-gray-200 rounded-xl cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-all">
-                    <input type="radio" name="payment_method" value="alfamart" class="w-5 h-5 text-blue-600 border-gray-300 focus:ring-blue-500">
-                    <div class="ml-3 flex-1">
-                        <span class="block text-sm font-bold text-gray-800">Alfamart</span>
-                        <span class="block text-xs text-gray-500">+ Biaya Admin Rp 5.000</span>
-                    </div>
-                </label>
-
-                <label class="flex items-center p-4 border border-gray-200 rounded-xl cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-all">
-                    <input type="radio" name="payment_method" value="indomaret" class="w-5 h-5 text-blue-600 border-gray-300 focus:ring-blue-500">
-                    <div class="ml-3 flex-1">
-                        <span class="block text-sm font-bold text-gray-800">Indomaret</span>
-                        <span class="block text-xs text-gray-500">+ Biaya Admin Rp 5.000</span>
-                    </div>
-                </label>
-
-                <!-- E-Wallet / QRIS -->
-                <label class="flex items-center p-4 border border-gray-200 rounded-xl cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-all">
-                    <input type="radio" name="payment_method" value="qris" class="w-5 h-5 text-blue-600 border-gray-300 focus:ring-blue-500">
-                    <div class="ml-3 flex-1">
-                        <span class="block text-sm font-bold text-gray-800">QRIS (Semua E-Wallet / M-Banking)</span>
-                        <span class="block text-xs text-gray-500">+ Biaya Admin 0.7%</span>
-                    </div>
-                </label>
-
-                <label class="flex items-center p-4 border border-gray-200 rounded-xl cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-all">
-                    <input type="radio" name="payment_method" value="gopay" class="w-5 h-5 text-blue-600 border-gray-300 focus:ring-blue-500">
-                    <div class="ml-3 flex-1">
-                        <span class="block text-sm font-bold text-gray-800">GoPay</span>
-                        <span class="block text-xs text-gray-500">+ Biaya Admin 2%</span>
-                    </div>
-                </label>
-
-                <label class="flex items-center p-4 border border-gray-200 rounded-xl cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-all">
-                    <input type="radio" name="payment_method" value="shopeepay" class="w-5 h-5 text-blue-600 border-gray-300 focus:ring-blue-500">
-                    <div class="ml-3 flex-1">
-                        <span class="block text-sm font-bold text-gray-800">ShopeePay</span>
-                        <span class="block text-xs text-gray-500">+ Biaya Admin 2%</span>
-                    </div>
-                </label>
-            </div>
-        </div>
-
-        <!-- Footer -->
-        <div class="p-5 border-t border-gray-100 bg-gray-50 rounded-b-2xl flex justify-end gap-3">
-            <button id="cancelModalBtn" class="px-5 py-2.5 text-sm font-bold text-gray-600 hover:bg-gray-200 rounded-xl transition-colors">Batal</button>
-            <button id="confirmPayBtn" class="px-5 py-2.5 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-colors shadow-lg shadow-blue-200 flex items-center gap-2">
-                <span id="btnText">Lanjutkan Pembayaran</span>
-                <svg id="btnSpinner" class="animate-spin hidden h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-            </button>
-        </div>
-    </div>
-</div>
 
 @endsection

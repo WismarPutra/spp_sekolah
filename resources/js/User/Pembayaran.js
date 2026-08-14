@@ -1,86 +1,51 @@
-
 document.addEventListener("DOMContentLoaded", function () {
 
-    // 2. Logika Modal Pemilihan Metode Pembayaran
-    const modal = document.getElementById('paymentModal');
-    const closeModalBtn = document.getElementById('closeModalBtn');
-    const cancelModalBtn = document.getElementById('cancelModalBtn');
-    const confirmPayBtn = document.getElementById('confirmPayBtn');
-    const btnText = document.getElementById('btnText');
-    const btnSpinner = document.getElementById('btnSpinner');
-    const modalBulanText = document.getElementById('modalBulanText');
-    
-    let currentPayUrl = '';
-
-    function closeModal() {
-        modal.classList.add('hidden');
-        // Reset status tombol
-        btnText.classList.remove('hidden');
-        btnSpinner.classList.add('hidden');
-        confirmPayBtn.disabled = false;
-        
-        // Hapus pilihan radio
-        const radios = document.querySelectorAll('input[name="payment_method"]');
-        radios.forEach(radio => radio.checked = false);
-    }
-
-    // Tutup modal jika klik tombol batal/X
-    closeModalBtn.addEventListener('click', closeModal);
-    cancelModalBtn.addEventListener('click', closeModal);
-
-    // Buka modal jika tombol 'Bayar Sekarang' diklik
-    document.querySelectorAll('.open-modal-button').forEach(button => {
+    // Logika Pembayaran Langsung (Tanpa Modal)
+    document.querySelectorAll('.pay-direct-btn').forEach(button => {
         button.addEventListener('click', function () {
-            currentPayUrl = this.getAttribute('data-url');
-            modalBulanText.textContent = this.getAttribute('data-tagihan-bulan');
-            modal.classList.remove('hidden');
-        });
-    });
+            const url = this.getAttribute('data-url');
+            const btnText = this.querySelector('span');
+            const btnSpinner = this.querySelector('.btn-spinner');
 
-    // Proses konfirmasi pembayaran
-    confirmPayBtn.addEventListener('click', function () {
-        const selectedMethod = document.querySelector('input[name="payment_method"]:checked');
-        
-        if (!selectedMethod) {
-            alert('Silakan pilih metode pembayaran terlebih dahulu!');
-            return;
-        }
+            // Tampilkan loading
+            this.disabled = true;
+            if (btnText) btnText.classList.add('hidden');
+            if (btnSpinner) btnSpinner.classList.remove('hidden');
 
-        // Tampilkan loading di tombol
-        btnText.classList.add('hidden');
-        btnSpinner.classList.remove('hidden');
-        confirmPayBtn.disabled = true;
+            fetch(url, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+                .then(async response => {
+                    const data = await response.json();
+                    if (!response.ok) {
+                        throw new Error(data.message || 'Terjadi kesalahan pada server');
+                    }
+                    return data;
+                })
+                .then(data => {
+                    if (data.redirect_url) {
+                        // Redirect ke halaman pembayaran Pakasir
+                        window.location.href = data.redirect_url;
+                    } else {
+                        alert('Gagal mendapatkan URL pembayaran dari server.');
+                        resetButton();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert(error.message || 'Terjadi kesalahan saat memproses pembayaran.');
+                    resetButton();
+                });
 
-        const url = `${currentPayUrl}?method=${selectedMethod.value}`;
-
-        fetch(url, {
-            method: 'GET',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
+            function resetButton() {
+                button.disabled = false;
+                if (btnText) btnText.classList.remove('hidden');
+                if (btnSpinner) btnSpinner.classList.add('hidden');
             }
-        })
-            .then(async response => {
-                const data = await response.json();
-                if (!response.ok) {
-                    throw new Error(data.message || 'Terjadi kesalahan pada server');
-                }
-                return data;
-            })
-            .then(data => {
-                if (data.redirect_url) {
-                    closeModal(); // Tutup modal
-                    // Redirect ke halaman pembayaran Pakasir
-                    window.location.href = data.redirect_url;
-                } else {
-                    alert('Gagal mendapatkan URL pembayaran dari server.');
-                    closeModal();
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert(error.message || 'Terjadi kesalahan saat memproses pembayaran.');
-                closeModal();
-            });
+        });
     });
 
 });

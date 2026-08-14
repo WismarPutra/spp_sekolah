@@ -67,25 +67,12 @@ document.addEventListener("DOMContentLoaded", function () {
                 return data;
             })
             .then(data => {
-                if (data.snap_token) {
-                    closeModal(); // Tutup modal buatan kita
-                    
-                    window.snap.pay(data.snap_token, {
-                        onSuccess: function(result){
-                            window.location.reload();
-                        },
-                        onPending: function(result){
-                            window.location.reload();
-                        },
-                        onError: function(result){
-                            alert("Gagal memproses pembayaran!");
-                        },
-                        onClose: function(){
-                            // User menutup popup Snap tanpa aksi
-                        }
-                    });
+                if (data.redirect_url) {
+                    closeModal(); // Tutup modal
+                    // Redirect ke halaman pembayaran Pakasir
+                    window.location.href = data.redirect_url;
                 } else {
-                    alert('Gagal mendapatkan Token pembayaran dari server.');
+                    alert('Gagal mendapatkan URL pembayaran dari server.');
                     closeModal();
                 }
             })

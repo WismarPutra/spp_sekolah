@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\Response;
 class VerifyCsrfToken
 {
     protected $except = [
-        'api/midtrans-callback',
+        'api/pakasir-callback',
     ];
     /**
      * Handle an incoming request.

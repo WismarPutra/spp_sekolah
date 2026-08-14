@@ -10,11 +10,7 @@
     <link rel="icon" type="image/x-icon" href="{{ asset('logoSmk.jpg')}}">
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    @if(config('midtrans.is_production'))
-    <script src="https://app.midtrans.com/snap/snap.js" data-client-key="{{ config('midtrans.client_key') }}"></script>
-    @else
-    <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('midtrans.client_key') }}"></script>
-    @endif
+
     <title>User</title>
 
 </head>

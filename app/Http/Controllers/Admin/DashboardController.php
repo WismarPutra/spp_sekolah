@@ -76,7 +76,7 @@ class DashboardController extends Controller
         $tahunAktif = $request->tahun ?? now()->year;
 
         // 1. Ambil dan Format Data sesuai Tipe
-        if (in_array($type, ['bulanan', 'toleransi'])) {
+        if (in_array($type, ['bulanan'])) {
             $dataLaporan = $this->getLaporanBulanan($bulanAktif, $tahunAktif);
             $fileName = "Rekap_SPP_Bulan_{$bulanAktif}_{$tahunAktif}.xlsx";
         } else {

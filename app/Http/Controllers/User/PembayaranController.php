@@ -4,7 +4,7 @@ namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Services\MidtransService;
+use App\Services\PakasirService;
 use App\Models\Tagihan;
 
 use App\Models\Siswa;
@@ -33,7 +33,7 @@ class PembayaranController extends Controller
         return view('user.pembayaran.index', compact('tagihans', 'riwayat', 'siswa'));
     }
 
-    public function pay(Request $request, $id, MidtransService $midtrans)
+    public function pay(Request $request, $id, PakasirService $pakasir)
     {
         try {
             $tagihan = Tagihan::with('siswa.user')->findOrFail($id);
@@ -41,29 +41,16 @@ class PembayaranController extends Controller
             // Buat Order ID Baru (Format: SPP-{tagihan_id}-{timestamp})
             $orderId = 'SPP-' . $tagihan->id . '-' . time();
 
-            // Tangkap metode yang dipilih
+            // Tangkap metode yang dipilih (opsional jika diteruskan ke Pakasir)
             $method = $request->query('method');
-            $adminFee = 0;
+            $adminFee = 0; // Biaya admin dihapus sementara
 
-            if ($method) {
-                // Kalkulasi admin fee
-                if (in_array($method, ['bca_va', 'bni_va', 'bri_va', 'echannel'])) {
-                    $adminFee = 4500;
-                } elseif (in_array($method, ['alfamart', 'indomaret'])) {
-                    $adminFee = 5000;
-                } elseif ($method === 'qris') {
-                    $adminFee = (int) round($tagihan->jumlah * 0.007); // 0.7%
-                } elseif (in_array($method, ['gopay', 'shopeepay'])) {
-                    $adminFee = (int) round($tagihan->jumlah * 0.02); // 2%
-                }
-            }
+            // Dapatkan URL Pembayaran dari Pakasir
+            $paymentUrl = $pakasir->createPaymentUrl($tagihan, $orderId, $method, $adminFee);
 
-            // Minta data Snap Token baru ke Midtrans
-            $snapToken = $midtrans->createTransaction($tagihan, $orderId, $method, $adminFee);
-
-            // Kembalikan snap_token ke frontend agar JavaScript bisa memicu pop-up
+            // Kembalikan redirect_url ke frontend
             return response()->json([
-                'snap_token' => $snapToken
+                'redirect_url' => $paymentUrl
             ]);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Error: ' . $e->getMessage()], 500);
@@ -73,17 +60,16 @@ class PembayaranController extends Controller
     public function webhook(Request $request, TagihanService $tagihanService)
     {
         $payload = $request->all();
+        \Log::info('Webhook Pakasir Masuk:', $payload);
+
         $orderId = $payload['order_id'] ?? null;
-        $statusCode = $payload['status_code'] ?? null;
-        $grossAmount = $payload['gross_amount'] ?? null;
-        $signatureKey = $payload['signature_key'] ?? null;
-        $transactionStatus = $payload['transaction_status'] ?? null;
-
-        $serverKey = config('midtrans.server_key');
-        $expectedSignature = hash('sha512', $orderId . $statusCode . $grossAmount . $serverKey);
-
-        if ($expectedSignature !== $signatureKey) {
-            return response()->json(['message' => 'Verifikasi Gagal'], 403);
+        $status = $payload['status'] ?? $payload['transaction_status'] ?? null;
+        
+        // Verifikasi sederhana bahwa webhook ditujukan untuk project kita
+        if (($payload['project'] ?? null) !== config('pakasir.project_slug')) {
+            \Log::warning('Webhook Pakasir: Invalid Project Slug', ['project' => $payload['project'] ?? null]);
+            // Return 200 supaya Pakasir tidak retry terus menerus, tapi kita abaikan
+            return response()->json(['status' => 'ignored']);
         }
 
         // Ekstrak tagihan_id dari order_id (Format: SPP-{tagihan_id}-{timestamp})
@@ -95,24 +81,13 @@ class PembayaranController extends Controller
                 $tagihan = Tagihan::find($tagihanId);
 
                 if ($tagihan) {
-                    if ($transactionStatus === 'capture' || $transactionStatus === 'settlement') {
+                    \Log::info('Webhook Pakasir: Tagihan ditemukan', ['tagihan_id' => $tagihan->id, 'status_webhook' => $status]);
+                    
+                    // Jika status pembayaran berhasil (Pakasir mengirimkan 'completed')
+                    if (in_array(strtolower($status), ['completed', 'success', 'paid', 'settlement', 'berhasil'])) {
                         if ($tagihan->status !== 'lunas') {
-                            $metode = $payload['payment_type'] ?? 'Midtrans';
-
-                            // Ekstrak nama bank atau gerai retail (Alfamart/Indomaret)
-                            if ($metode === 'bank_transfer') {
-                                if (isset($payload['va_numbers'][0]['bank'])) {
-                                    $metode = $payload['va_numbers'][0]['bank'];
-                                } elseif (isset($payload['permata_va_number'])) {
-                                    $metode = 'permata';
-                                }
-                            } elseif ($metode === 'echannel') {
-                                $metode = 'mandiri'; // Mandiri Bill
-                            } elseif ($metode === 'cstore') {
-                                if (isset($payload['store'])) {
-                                    $metode = $payload['store']; // alfamart atau indomaret
-                                }
-                            }
+                            // Sesuai dokumen Pakasir, metode ada di key 'payment_method'
+                            $metode = $payload['payment_method'] ?? 'Pakasir';
 
                             $tagihan->update([
                                 'status' => 'lunas',
@@ -121,10 +96,15 @@ class PembayaranController extends Controller
                             ]);
 
                             $tagihanService->markAsPaid($tagihan);
+                            \Log::info('Webhook Pakasir: Tagihan berhasil dilunasi');
+                        } else {
+                            \Log::info('Webhook Pakasir: Tagihan sudah lunas sebelumnya');
                         }
+                    } else {
+                        \Log::warning('Webhook Pakasir: Status tidak dikenali sebagai sukses', ['status' => $status]);
                     }
-                    // Jika gagal/cancel/expire, kita abaikan saja karena tidak ada state 'failed' di Tagihan.
-                    // Status Tagihan tetap 'belum'.
+                } else {
+                    \Log::warning('Webhook Pakasir: Tagihan tidak ditemukan', ['tagihan_id' => $tagihanId]);
                 }
             }
         }

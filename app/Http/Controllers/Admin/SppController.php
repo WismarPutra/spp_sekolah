@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Spp;
+use App\Models\Tagihan;
 use Illuminate\Http\Request;
 
 
@@ -56,10 +57,11 @@ class SppController extends Controller
     {
         $spp = Spp::findOrFail($id);
 
-        // Cek apakah kombinasi tahun, kelas, dan jurusan sudah ada
+        // Cek apakah kombinasi tahun, kelas, dan jurusan sudah ada, kecuali untuk data ini sendiri
         $exists = Spp::where('tahun', $request->tahun)
             ->where('kelas', $request->kelas)
             ->where('jurusan', $request->jurusan)
+            ->where('id', '!=', $id)
             ->exists();
 
         if ($exists) {
@@ -75,6 +77,12 @@ class SppController extends Controller
 
     public function destroy($id)
     {
+        // Cek apakah SPP ini sedang digunakan di tabel tagihan
+        $isUsed = Tagihan::where('spp_id', $id)->exists();
+        if ($isUsed) {
+            return redirect()->back()->with('error', 'Data SPP gagal dihapus karena masih digunakan pada data Tagihan siswa!');
+        }
+
         $spp = Spp::findOrFail($id);
         $spp->delete();
 

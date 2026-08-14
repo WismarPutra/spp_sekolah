@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\User\PembayaranController;
 
 // Jangan tambahkan '/api' di dalam petik, karena sudah otomatis
-Route::post('/midtrans-callback', [PembayaranController::class, 'webhook']);
+Route::post('/pakasir-callback', [PembayaranController::class, 'webhook']);
 Route::get('/run-scheduler-spp', function (Request $request) {
     // 1. Keamanan: Cek token rahasia
     $secretToken = 'token-rahasia-spp-123'; // Ganti dengan token yang sulit ditebak

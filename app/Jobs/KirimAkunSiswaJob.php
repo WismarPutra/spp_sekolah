@@ -25,8 +25,6 @@ class KirimAkunSiswaJob implements ShouldQueue
 
     public function handle(WhatsAppService $wa)
     {
-        // delay biar tidak ke-block
-        sleep(5);
 
         $link = "https://smkutamaciranjang.sch.id/";
 

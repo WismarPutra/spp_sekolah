@@ -124,11 +124,15 @@ class TagihanService
                           ->where('jurusan', $siswa->jurusan)
                           ->first();
 
-                $nominalSpp = $spp ? $spp->nominal : 60000; 
+                if (!$spp) {
+                    continue; // Skip jika master SPP belum diatur, daripada dihardcode 60000
+                }
+
+                $nominalSpp = $spp->nominal; 
 
                 Tagihan::create([
                     'siswa_id' => $siswa->id,
-                    'spp_id'   => $spp ? $spp->id : null,
+                    'spp_id'   => $spp->id,
                     'bulan'    => $bulanAngka,
                     'tahun'    => $tahun,
                     'jumlah'   => $nominalSpp,

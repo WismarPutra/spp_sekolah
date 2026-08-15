@@ -181,7 +181,7 @@ class TagihanController extends Controller
         $tagihan = Tagihan::with('siswa')->findOrFail($id);
 
         $tanggalDibuat = \Carbon\Carbon::parse($tagihan->created_at);
-        $sudahLewat10Hari = \Carbon\Carbon::now()->gte($tanggalDibuat);
+        $sudahLewat10Hari = \Carbon\Carbon::now()->diffInDays($tanggalDibuat) >= 10;
 
         if (!$sudahLewat10Hari) {
             return back()->with('error', 'Gagal! Tagihan ini belum melewati batas waktu 10 hari untuk dikirimkan pengingat.');

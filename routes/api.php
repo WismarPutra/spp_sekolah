@@ -15,13 +15,19 @@ Route::get('/run-scheduler-spp', function (Request $request) {
         abort(403, 'Akses Ditolak');
     }
 
-    // 2. Jalankan perintah schedule:run
-    // Ini sama dengan mengetikkan 'php artisan schedule:run' di terminal
+    // 2. Jalankan perintah schedule:run (Untuk mengecek kalender otomatisasi seperti tgl 15)
     Artisan::call('schedule:run');
+    $scheduleOutput = Artisan::output();
+
+    // 3. Jalankan perintah queue:work (Untuk mengeksekusi tabel 'jobs' / kirim WA)
+    // Menggunakan --stop-when-empty agar proses PHP tidak hang/loading selamanya
+    Artisan::call('queue:work', ['--stop-when-empty' => true]);
+    $queueOutput = Artisan::output();
 
     return response()->json([
         'status' => 'success',
-        'message' => 'Scheduler berhasil dijalankan',
-        'output' => Artisan::output()
+        'message' => 'Scheduler & Queue berhasil dijalankan',
+        'output_schedule' => $scheduleOutput,
+        'output_queue' => $queueOutput
     ]);
 });

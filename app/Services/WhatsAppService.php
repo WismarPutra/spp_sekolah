@@ -11,7 +11,7 @@ class WhatsAppService
         $token = config('services.fonnte.token');
 
         try {
-            sleep(5); // anti spam tambahan
+            sleep(5); // Jeda aman 5 detik agar worker bisa memproses lebih banyak job dalam batas waktu max-time 45 detik
 
             $response = Http::withHeaders([
                 'Authorization' => $token

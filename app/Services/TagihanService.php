@@ -44,7 +44,8 @@ class TagihanService
 
             // Logika penetapan nominal & id tarif master SPP di sisi Backend
             if ($data['tipe_tagihan'] === 'massal') {
-                $sppSiswa = Spp::where('kelas', $siswa->kelas)
+                $sppSiswa = Spp::where('tahun', $siswa->tahun_masuk)
+                    ->where('kelas', $siswa->kelas)
                     ->where('jurusan', $siswa->jurusan)
                     ->first();
                 if ($sppSiswa) {

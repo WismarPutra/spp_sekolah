@@ -79,7 +79,8 @@ class TagihanController extends Controller
             $request->validate(['siswa_id' => 'required']);
 
             $siswa = Siswa::findOrFail($request->siswa_id);
-            $sppSiswa = Spp::where('kelas', $siswa->kelas)
+            $sppSiswa = Spp::where('tahun', $siswa->tahun_masuk)
+                ->where('kelas', $siswa->kelas)
                 ->where('jurusan', $siswa->jurusan)
                 ->first();
 

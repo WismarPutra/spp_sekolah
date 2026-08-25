@@ -8,8 +8,7 @@ class Tagihan extends Model
 {
     protected $table = 'tagihan';
     protected $fillable = [
-        'siswa_id',
-        'spp_id',
+        'siswa_nis',
         'bulan',
         'tahun',
         'jumlah',
@@ -23,13 +22,7 @@ class Tagihan extends Model
     public function siswa()
     {
         // Tagihan dimiliki oleh satu siswa
-        return $this->belongsTo(Siswa::class, 'siswa_id');
-    }
-
-
-    public function spp()
-    {
-        return $this->belongsTo(Spp::class);
+        return $this->belongsTo(Siswa::class, 'siswa_nis', 'nis');
     }
 
     public function getBulanTextAttribute()

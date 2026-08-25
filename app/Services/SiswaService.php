@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\User;
 use App\Models\Siswa;
+use App\Models\Spp;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -39,9 +40,20 @@ class SiswaService
                 'role' => 'orang_tua'
             ]);
 
+            // Cari data SPP yang cocok
+            $spp = Spp::where('tahun', $data['tahun_masuk'])
+                        ->where('kelas', $data['kelas'])
+                        ->where('jurusan', $data['jurusan'])
+                        ->first();
+
+            if (!$spp) {
+                throw new \Exception('Tarif SPP untuk tahun, kelas, dan jurusan tersebut belum diatur. Silakan tambahkan data SPP terlebih dahulu.');
+            }
+
             // Create siswa
             $siswa = Siswa::create([
                 'user_id' => $user->id,
+                'spp_id' => $spp->id,
                 'nis' => $data['nis'],
                 'nama' => $data['nama'],
                 'kelas' => $data['kelas'],
@@ -74,8 +86,19 @@ class SiswaService
             // Standardisasi nomor baru seperti saat create (62 -> 0)
             $noBaru = preg_replace('/^62/', '0', $data['no_hp']);
 
+            // Cari data SPP yang cocok
+            $spp = Spp::where('tahun', $data['tahun_masuk'])
+                        ->where('kelas', $data['kelas'])
+                        ->where('jurusan', $data['jurusan'])
+                        ->first();
+
+            if (!$spp) {
+                throw new \Exception('Tarif SPP untuk tahun, kelas, dan jurusan tersebut belum diatur. Silakan tambahkan data SPP terlebih dahulu.');
+            }
+
             // Update data Siswa
             $siswa->update([
+                'spp_id'      => $spp->id,
                 'nis'         => $data['nis'],
                 'nama'        => $data['nama'],
                 'kelas'       => $data['kelas'],

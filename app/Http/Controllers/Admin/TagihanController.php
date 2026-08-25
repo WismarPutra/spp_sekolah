@@ -73,20 +73,9 @@ class TagihanController extends Controller
 
         $dataInput = $request->all();
 
-        // LOGIKA PERBAIKAN: Jika tipe individu namun admin lupa memilih spp_id manual di form,
-        // kita bantu cari otomatis di server berdasarkan kelas & jurusan si siswa!
+        // LOGIKA PERBAIKAN: Validasi tipe individu
         if ($request->tipe_tagihan === 'individu') {
-            $request->validate(['siswa_id' => 'required']);
-
-            $siswa = Siswa::findOrFail($request->siswa_id);
-            $sppSiswa = Spp::where('tahun', $siswa->tahun_masuk)
-                ->where('kelas', $siswa->kelas)
-                ->where('jurusan', $siswa->jurusan)
-                ->first();
-
-            // Jika form manual diisi, pakai itu. Jika kosong, pakai pencocokan otomatis
-            $dataInput['spp_id'] = $request->filled('spp_id') ? $request->spp_id : ($sppSiswa ? $sppSiswa->id : null);
-            $dataInput['jumlah'] = $sppSiswa ? $sppSiswa->nominal : 0;
+            $request->validate(['siswa_nis' => 'required']);
         }
 
         $proses = $tagihanService->create($dataInput);
@@ -187,7 +176,7 @@ class TagihanController extends Controller
         if (!$sudahLewat10Hari) {
             return back()->with('error', 'Gagal! Tagihan ini belum melewati batas waktu 10 hari untuk dikirimkan pengingat.');
         }
-        $jumlahTunggakan = Tagihan::where('siswa_id', $tagihan->siswa_id)
+        $jumlahTunggakan = Tagihan::where('siswa_nis', $tagihan->siswa_nis)
             ->where('status', 'belum')
             ->count();
         $listBulan = [

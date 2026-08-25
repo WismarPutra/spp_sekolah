@@ -124,7 +124,7 @@ Tagihan
                         {{-- Logika Tombol WA Reminder Sisi Server --}}
                         @if($item->status == 'belum')
                         @php
-                        $jumlahTunggakan = $ambilDataTagihan->where('siswa_id', $item->siswa_id)->count();
+                        $jumlahTunggakan = $ambilDataTagihan->where('siswa_nis', $item->siswa_nis)->count();
                         $tanggalDibuat = \Carbon\Carbon::parse($item->created_at);
                         $sudahLewat10Hari = \Carbon\Carbon::now()->gte($tanggalDibuat);
 

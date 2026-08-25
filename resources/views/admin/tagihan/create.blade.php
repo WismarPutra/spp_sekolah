@@ -52,16 +52,12 @@
                         <div class="mb-3">
                             <label class="block text-sm font-semibold text-gray-600 mb-1">Pilih Siswa & Parameter
                                 SPP</label>
-                            <select name="siswa_id"
+                            <select name="siswa_nis" id="siswa_nis"
                                 class="w-full border border-gray-200 rounded-lg p-2.5 text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none">
                                 <option value="" disabled selected>-- Pilih Siswa --</option>
-                                @foreach($siswa as $s)
-                                @php
-                                $sppSiswa = $spp->where('kelas', $s->kelas)->where('jurusan', $s->jurusan)->first();
-                                $sppId = $sppSiswa ? $sppSiswa->id : '';
-                                @endphp
-                                <option value="{{ $s->id }}">
-                                    {{ $s->nama }} — Kelas {{ $s->kelas }} ({{ strtoupper($s->jurusan) }})
+                                @foreach($siswas as $siswa)
+                                <option value="{{ $siswa->nis }}">
+                                    {{ $siswa->nis }} - {{ $siswa->nama }} ({{ $siswa->kelas }} {{ $siswa->jurusan }})
                                 </option>
                                 @endforeach
                             </select>
@@ -69,23 +65,7 @@
                                 berdasarkan data master penempatan kelas & jurusan siswa.</p>
                         </div>
 
-                        {{-- CONTAINER PARAMETER TARIF ACUAN --}}
-                        <div class="mb-3">
-                            <label class="block text-sm font-semibold text-gray-600 mb-1">Gunakan Parameter Tarif SPP
-                                Acuan</label>
-                            <select name="spp_id"
-                                class="w-full border border-gray-200 rounded-lg p-2.5 text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none">
-                                <option value="" disabled selected>-- Pilih Referensi Angkatan / Jurusan --</option>
-                                @foreach($spp as $sp)
-                                <option value="{{ $sp->id }}">
-                                    Angkatan {{ $sp->tahun }} — {{$sp->kelas}} - {{ strtoupper($sp->jurusan) }} — (Rp
-                                    {{ number_format($sp->nominal) }})
-                                </option>
-                                @endforeach
-                            </select>
-                            <p class="text-[11px] text-red-400 mt-1">*Pilih opsi ini jika menginput tagihan bertipe
-                                khusus/individu.</p>
-                        </div>
+
                     </div>
 
                 </div>

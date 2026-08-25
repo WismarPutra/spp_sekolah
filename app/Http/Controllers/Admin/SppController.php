@@ -77,8 +77,8 @@ class SppController extends Controller
 
     public function destroy($id)
     {
-        // Cek apakah SPP ini sedang digunakan di tabel tagihan
-        $isUsed = Tagihan::where('spp_id', $id)->exists();
+        // Cek apakah SPP masih digunakan di tabel siswa
+        $isUsed = Siswa::where('spp_id', $id)->exists();
         if ($isUsed) {
             return redirect()->back()->with('error', 'Data SPP gagal dihapus karena masih digunakan pada data Tagihan siswa!');
         }

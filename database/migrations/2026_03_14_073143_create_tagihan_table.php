@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('tagihan', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('siswa_id')->constrained('siswa')->cascadeOnDelete();
-            $table->foreignId('spp_id')->nullable()->constrained('spp')->nullOnDelete();
+            $table->string('siswa_nis');
+            $table->foreign('siswa_nis')->references('nis')->on('siswa')->cascadeOnDelete();
             
             $table->integer('bulan');
             $table->integer('tahun');

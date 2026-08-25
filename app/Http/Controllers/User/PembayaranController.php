@@ -21,12 +21,12 @@ class PembayaranController extends Controller
         }
 
         // Tagihan yang harus dibayar (Muncul di Card atas)
-        $tagihans = Tagihan::where('siswa_id', $siswa->id)
+        $tagihans = Tagihan::where('siswa_nis', $siswa->nis)
             ->where('status', 'belum')
             ->get();
 
         // Tagihan yang sudah lunas (Muncul di Tabel bawah)
-        $riwayat = Tagihan::where('siswa_id', $siswa->id)
+        $riwayat = Tagihan::where('siswa_nis', $siswa->nis)
             ->where('status', 'lunas')
             ->get();
 

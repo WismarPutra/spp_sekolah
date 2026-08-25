@@ -37,7 +37,7 @@ Edit Data Siswa
         {{-- Fitur Reset & Kirim Ulang Akun --}}
         <div class="mb-8 p-4 bg-amber-50 border border-amber-200 rounded-lg">
             <p class="text-sm text-amber-800 mb-3 font-medium">Orang tua lupa password atau chat WA terhapus?</p>
-            <form action="{{ route('admin.siswa.kirimUlangAkun', $siswa->id) }}" method="POST"
+            <form action="{{ route('admin.siswa.kirimUlangAkun', $siswa->nis) }}" method="POST"
                 onsubmit="return confirm('Yakin ingin mereset password dan mengirim info akun ke WA siswa ini?')">
                 @csrf
                 <button type="submit"
@@ -50,7 +50,7 @@ Edit Data Siswa
             </form>
         </div>
 
-        <form action="{{ route('siswa.update', $siswa->id) }}" method="POST">
+        <form action="{{ route('siswa.update', $siswa->nis) }}" method="POST">
             @csrf
             @method('PUT')
 

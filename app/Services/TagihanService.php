@@ -18,7 +18,7 @@ class TagihanService
         } else {
 
         
-            $siswaList = Siswa::where('id', $data['siswa_id'])->get();
+            $siswaList = Siswa::where('nis', $data['siswa_nis'])->get();
         }
 
         $namaBulan = [
@@ -30,7 +30,7 @@ class TagihanService
 
         foreach ($siswaList as $index => $siswa) {
             // Cek duplikasi: mencegah 1 siswa punya > 1 tagihan di bulan & tahun yang sama
-            $cekDuplikat = Tagihan::where('siswa_id', $siswa->id)
+            $cekDuplikat = Tagihan::where('siswa_nis', $siswa->nis)
                 ->where('bulan', $data['bulan'])
                 ->where('tahun', $data['tahun'])
                 ->count();
@@ -39,31 +39,17 @@ class TagihanService
                 continue;
             }
 
-            $sppId = null;
             $jumlah = 0;
 
-            // Logika penetapan nominal & id tarif master SPP di sisi Backend
-            if ($data['tipe_tagihan'] === 'massal') {
-                $sppSiswa = Spp::where('tahun', $siswa->tahun_masuk)
-                    ->where('kelas', $siswa->kelas)
-                    ->where('jurusan', $siswa->jurusan)
-                    ->first();
-                if ($sppSiswa) {
-                    $sppId = $sppSiswa->id;
-                    $jumlah = $sppSiswa->nominal;
-                }
-            } else {
-                $sppId = $data['spp_id'];
-                // Ambil nominal asli dari database master SPP (Lebih Aman daripada melempar nilai input text dari Client)
-                $sppMaster = Spp::find($sppId);
-                $jumlah = $sppMaster ? $sppMaster->nominal : 0;
+            // Logika penetapan nominal dari SPP Siswa
+            if ($siswa->spp) {
+                $jumlah = $siswa->spp->nominal;
             }
 
             // Eksekusi penyimpanan ke tabel tagihans jika parameter relasi valid
-            if ($sppId && $jumlah > 0) {
+            if ($jumlah > 0) {
                 $tagihan = Tagihan::create([
-                    'siswa_id' => $siswa->id,
-                    'spp_id'   => $sppId,
+                    'siswa_nis' => $siswa->nis,
                     'bulan'    => $data['bulan'],
                     'tahun'    => $data['tahun'],
                     'jumlah'   => $jumlah,
@@ -132,8 +118,7 @@ class TagihanService
                 $nominalSpp = $spp->nominal; 
 
                 Tagihan::create([
-                    'siswa_id' => $siswa->id,
-                    'spp_id'   => $spp->id,
+                    'siswa_nis' => $siswa->nis,
                     'bulan'    => $bulanAngka,
                     'tahun'    => $tahun,
                     'jumlah'   => $nominalSpp,
@@ -176,7 +161,7 @@ class TagihanService
                 $siswa = $tagihan->siswa;
 
                 // 2. Hitung total seluruh tunggakan aktif milik siswa ini
-                $jumlahTunggakan = Tagihan::where('siswa_id', $siswa->id)
+                $jumlahTunggakan = Tagihan::where('siswa_nis', $siswa->nis)
                     ->where('status', 'belum')
                     ->count();
 

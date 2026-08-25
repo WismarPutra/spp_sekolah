@@ -14,4 +14,9 @@ class Spp extends Model
         'jurusan',
         'nominal'
     ];
+
+    public function siswas()
+    {
+        return $this->hasMany(Siswa::class, 'spp_id');
+    }
 }

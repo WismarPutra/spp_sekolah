@@ -59,12 +59,12 @@ Data Siswa
                         <td class="px-4 py-4">
                             <div class="flex items-center justify-center gap-2">
                                 {{-- Ubah Href Edit --}}
-                                <a href="{{ route('siswa.edit', $siswa->id) }}"
+                                <a href="{{ route('siswa.edit', $siswa->nis) }}"
                                     class="inline-flex items-center px-3 py-1.5 bg-yellow-400 hover:bg-yellow-500 text-yellow-900 text-xs font-bold rounded-lg transition duration-200">
                                     Edit
                                 </a>
 
-                                <form action="{{ route('siswa.destroy', $siswa->id) }}" method="POST" class="form-delete" onsubmit="return confirm('Yakin ingin menghapus data?')">
+                                <form action="{{ route('siswa.destroy', $siswa->nis) }}" method="POST" class="form-delete" onsubmit="return confirm('Yakin ingin menghapus data?')">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="inline-flex items-center px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white text-xs font-bold rounded-lg transition duration-200 shadow-sm">
